@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KOIN — Selesai!</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #0D2B6B 0%, #1A5276 50%, #117A65 100%);
+      min-height: 100vh;
+      padding: 20px;
+      padding-bottom: 40px;
+      overflow-x: hidden;
+    }
+
+    /* ── KONFETI ── */
+    .konfeti {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      pointer-events: none;
+      z-index: 999;
+    }
+
+    .konfeti-piece {
+      position: absolute;
+      border-radius: 2px;
+      animation: fall linear forwards;
+    }
+
+    @keyframes fall {
+      from { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+      to   { transform: translateY(110vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* ── HERO ── */
+    .hero {
+      text-align: center;
+      padding: 30px 20px 20px;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .hero-badge {
+      font-size: 80px;
+      display: block;
+      animation: pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      margin-bottom: 12px;
+    }
+
+    @keyframes pop {
+      from { transform: scale(0) rotate(-10deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0deg);   opacity: 1; }
+    }
+
+    .hero-title {
+      font-size: 28px;
+      font-weight: 900;
+      color: white;
+      margin-bottom: 6px;
+    }
+
+    .hero-sub {
+      font-size: 14px;
+      color: rgba(255,255,255,0.6);
+      line-height: 1.6;
+    }
+
+    /* ── SUMMARY CARD ── */
+    .summary-card {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 420px;
+      margin: 0 auto 16px;
+    }
+
+    .summary-label {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .summary-row:last-child { border-bottom: none; }
+
+    .summary-row-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .summary-row-right {
+      font-size: 14px;
+      font-weight: 700;
+      color: #F9E79F;
+    }
+
+    /* ── CELENGAN SUMMARY ── */
+    .celengan-summary {
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 420px;
+      margin: 0 auto 16px;
+    }
+
+    .celengan-summary-title {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 14px;
+    }
+
+    .celengan-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .celengan-item {
+      text-align: center;
+      background: rgba(255,255,255,0.05);
+      border-radius: 14px;
+      padding: 12px 8px;
+    }
+
+    .celengan-item-emoji { font-size: 24px; display: block; margin-bottom: 4px; }
+    .celengan-item-label { font-size: 10px; color: rgba(255,255,255,0.4); margin-bottom: 4px; }
+    .celengan-item-amount { font-size: 13px; font-weight: 700; }
+
+    .spending-color { color: #F1948A; }
+    .saving-color   { color: #7DCEA0; }
+    .sharing-color  { color: #C39BD3; }
+
+    /* ── BADGE EARNED ── */
+    .badge-earned {
+      background: linear-gradient(135deg, rgba(243,156,18,0.2), rgba(230,126,22,0.2));
+      border: 1px solid rgba(243,156,18,0.3);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 420px;
+      margin: 0 auto 16px;
+      text-align: center;
+    }
+
+    .badge-earned-title {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .badge-earned-emoji { font-size: 50px; display: block; margin-bottom: 8px; }
+    .badge-earned-name  { font-size: 20px; font-weight: 900; color: #F39C12; margin-bottom: 4px; }
+    .badge-earned-desc  { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+    /* ── WISHLIST PREVIEW ── */
+    .wishlist-preview {
+      background: rgba(155,89,182,0.15);
+      border: 1px solid rgba(155,89,182,0.3);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 420px;
+      margin: 0 auto 16px;
+    }
+
+    .wishlist-preview-title {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .wishlist-preview-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(155,89,182,0.2);
+    }
+
+    .wishlist-preview-item:last-child { border-bottom: none; }
+
+    .wishlist-preview-name {
+      font-size: 13px;
+      color: rgba(255,255,255,0.8);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .wishlist-preview-days {
+      font-size: 12px;
+      color: #C39BD3;
+      font-weight: 600;
+    }
+
+    /* ── MOTIVASI QUOTE ── */
+    .quote-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px;
+      max-width: 420px;
+      margin: 0 auto 20px;
+      text-align: center;
+    }
+
+    .quote-text {
+      font-size: 15px;
+      color: rgba(255,255,255,0.8);
+      font-style: italic;
+      line-height: 1.7;
+      margin-bottom: 8px;
+    }
+
+    .quote-author {
+      font-size: 12px;
+      color: #F39C12;
+      font-weight: 700;
+    }
+
+    /* ── TOMBOL ── */
+    .btn-wrap {
+      max-width: 420px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-main {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #F39C12, #E67E22);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(243,156,18,0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-main:hover { transform: translateY(-2px); }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 14px;
+      background: rgba(255,255,255,0.08);
+      color: rgba(255,255,255,0.7);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:hover { background: rgba(255,255,255,0.12); }
+
+    /* ── STREAK ── */
+    .streak-card {
+      background: linear-gradient(135deg, rgba(231,76,60,0.2), rgba(192,57,43,0.2));
+      border: 1px solid rgba(231,76,60,0.3);
+      border-radius: 16px;
+      padding: 14px 20px;
+      max-width: 420px;
+      margin: 0 auto 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .streak-emoji { font-size: 32px; }
+
+    .streak-info { flex: 1; }
+
+    .streak-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+    }
+
+    .streak-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+    }
+
+    .streak-count {
+      font-size: 28px;
+      font-weight: 900;
+      color: #F1948A;
+    }
+
+    /* ── FADE UP ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.5s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .d1 { animation-delay: 0.1s; }
+    .d2 { animation-delay: 0.2s; }
+    .d3 { animation-delay: 0.3s; }
+    .d4 { animation-delay: 0.4s; }
+    .d5 { animation-delay: 0.5s; }
+    .d6 { animation-delay: 0.6s; }
+  </style>
+</head>
+<body>
+
+  <!-- KONFETI -->
+  <div class="konfeti" id="konfeti"></div>
+
+  <!-- HERO -->
+  <div class="hero fade-up">
+    <span class="hero-badge" id="heroBadge">🎉</span>
+    <div class="hero-title" id="heroTitle">Selesai Hari Ini!</div>
+    <div class="hero-sub" id="heroSub">Kamu hebat sudah belajar mengelola uang hari ini!</div>
+  </div>
+
+  <!-- SUMMARY HARI INI -->
+  <div class="summary-card fade-up d1">
+    <div class="summary-label">📋 RINGKASAN HARI INI</div>
+    <div class="summary-row">
+      <div class="summary-row-left">💰 Uang Jajan</div>
+      <div class="summary-row-right" id="sumAllowance">Rp 0</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-row-left">🛒 Total Belanja</div>
+      <div class="summary-row-right" id="sumSpent">Rp 0</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-row-left">⚖️ Jam Kerja Ortu</div>
+      <div class="summary-row-right" id="sumHours">0 jam</div>
+    </div>
+    <div class="summary-row">
+      <div class="summary-row-left">💼 Profesi Dipelajari</div>
+      <div class="summary-row-right" id="sumProf">—</div>
+    </div>
+  </div>
+
+  <!-- CELENGAN -->
+  <div class="celengan-summary fade-up d2">
+    <div class="celengan-summary-title">🪣 ALOKASI CELENGAN</div>
+    <div class="celengan-row">
+      <div class="celengan-item">
+        <span class="celengan-item-emoji">🛒</span>
+        <div class="celengan-item-label">Spending</div>
+        <div class="celengan-item-amount spending-color" id="celSpending">Rp 0</div>
+      </div>
+      <div class="celengan-item">
+        <span class="celengan-item-emoji">🐷</span>
+        <div class="celengan-item-label">Saving</div>
+        <div class="celengan-item-amount saving-color" id="celSaving">Rp 0</div>
+      </div>
+      <div class="celengan-item">
+        <span class="celengan-item-emoji">🤝</span>
+        <div class="celengan-item-label">Sharing</div>
+        <div class="celengan-item-amount sharing-color" id="celSharing">Rp 0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BADGE EARNED -->
+  <div class="badge-earned fade-up d3" id="badgeEarned" style="display:none">
+    <div class="badge-earned-title">🏅 BADGE HARI INI</div>
+    <span class="badge-earned-emoji" id="badgeEmoji">🏅</span>
+    <div class="badge-earned-name"  id="badgeName">Anak Bijak</div>
+    <div class="badge-earned-desc"  id="badgeDesc">Kamu hebat hari ini!</div>
+  </div>
+
+  <!-- STREAK -->
+  <div class="streak-card fade-up d3">
+    <span class="streak-emoji">🔥</span>
+    <div class="streak-info">
+      <div class="streak-title">Streak Belajar</div>
+      <div class="streak-sub">Hari berturut-turut buka KOIN</div>
+    </div>
+    <div class="streak-count" id="streakCount">1</div>
+  </div>
+
+  <!-- WISHLIST PREVIEW -->
+  <div class="wishlist-preview fade-up d4" id="wishlistPreview" style="display:none">
+    <div class="wishlist-preview-title">🎯 TARGET NABUNGMU</div>
+    <div id="wishlistPreviewList"></div>
+  </div>
+
+  <!-- QUOTE -->
+  <div class="quote-card fade-up d5">
+    <div class="quote-text" id="quoteText">"Uang bukan sekadar angka — uang adalah waktu dan kerja keras orang yang kamu cintai."</div>
+    <div class="quote-author">— KOIN 🪙</div>
+  </div>
+
+  <!-- TOMBOL -->
+  <div class="btn-wrap fade-up d6">
+    <button class="btn-main" onclick="window.location.href='index.html'">
+      🔄 Main Lagi Besok!
+    </button>
+    <button class="btn-secondary" onclick="window.location.href='dashboard.html'">
+      📊 Lihat Dashboard Orang Tua
+    </button>
+    <button class="btn-secondary" onclick="bagikan()">
+      📤 Bagikan ke Orang Tua
+    </button>
+  </div>
+
+  <script type="module" src="./navbar.js">
+    // ── DATA ───────────────────────────────────────────────────────────────
+    const profession = JSON.parse(sessionStorage.getItem('profession')) || {}
+    const allowance  = parseInt(sessionStorage.getItem('allowance'))    || 0
+    const totalSpent = parseInt(sessionStorage.getItem('totalSpent'))   || 0
+    const celengan   = JSON.parse(sessionStorage.getItem('celengan'))   || {}
+    const wishlist   = JSON.parse(sessionStorage.getItem('wishlist'))   || []
+
+    const fmt     = n => new Intl.NumberFormat('id-ID').format(n)
+    const perHour = profession.daily_income
+      ? profession.daily_income / profession.work_hours
+      : 1
+
+    // ── ISI DATA ───────────────────────────────────────────────────────────
+    document.getElementById('sumAllowance').textContent = 'Rp ' + fmt(allowance)
+    document.getElementById('sumSpent').textContent     = 'Rp ' + fmt(totalSpent)
+    document.getElementById('sumHours').textContent     = (totalSpent/perHour).toFixed(1) + ' jam'
+    document.getElementById('sumProf').textContent      = profession.name || '—'
+
+    document.getElementById('celSpending').textContent  = 'Rp ' + fmt(celengan.spending || 0)
+    document.getElementById('celSaving').textContent    = 'Rp ' + fmt(celengan.saving   || 0)
+    document.getElementById('celSharing').textContent   = 'Rp ' + fmt(celengan.sharing  || 0)
+
+    // ── BADGE ──────────────────────────────────────────────────────────────
+    const badgeName = sessionStorage.getItem('badgeName') ||
+      document.getElementById('badgeName')?.textContent
+
+    const badgeMap = {
+      'Super Hemat!':    { emoji: '🏆', desc: 'Hemat dan banyak nabung. Luar biasa!' },
+      'Raja Tabungan!':  { emoji: '🐷', desc: 'Lebih dari separuh uang ditabung!' },
+      'Si Dermawan!':    { emoji: '💛', desc: 'Suka berbagi, rezeki makin bertambah!' },
+      'Anak Bijak!':     { emoji: '😊', desc: 'Bijak mengatur uang hari ini!' },
+      'Mau Belajar!':    { emoji: '💪', desc: 'Semangat! Besok pasti lebih baik!' },
+    }
+
+    // Tentukan badge dari data celengan
+    const ratio      = totalSpent / (profession.daily_income || 1) * 100
+    const savingPct  = ((celengan.saving  || 0) / (allowance - totalSpent || 1)) * 100
+    const sharingPct = ((celengan.sharing || 0) / (allowance - totalSpent || 1)) * 100
+
+    let badge
+    if (ratio <= 25 && savingPct >= 50)  badge = 'Super Hemat!'
+    else if (sharingPct >= 20)           badge = 'Si Dermawan!'
+    else if (savingPct >= 50)            badge = 'Raja Tabungan!'
+    else if (ratio <= 50)                badge = 'Anak Bijak!'
+    else                                 badge = 'Mau Belajar!'
+
+    const badgeInfo = badgeMap[badge]
+    if (badgeInfo) {
+      document.getElementById('badgeEmoji').textContent = badgeInfo.emoji
+      document.getElementById('badgeName').textContent  = badge
+      document.getElementById('badgeDesc').textContent  = badgeInfo.desc
+      document.getElementById('badgeEarned').style.display = 'block'
+
+      document.getElementById('heroBadge').textContent = badgeInfo.emoji
+    }
+
+    // ── HERO TEXT ──────────────────────────────────────────────────────────
+    const heroTexts = {
+      'Super Hemat!':   { title: 'Luar Biasa! 🌟',  sub: 'Kamu sangat hemat hari ini. Ayah/Ibu pasti bangga!' },
+      'Raja Tabungan!': { title: 'Keren Banget! 🐷', sub: 'Tabunganmu makin banyak. Impianmu semakin dekat!' },
+      'Si Dermawan!':   { title: 'Hati Mulia! 💛',   sub: 'Kamu suka berbagi. Itulah anak yang baik!' },
+      'Anak Bijak!':    { title: 'Bagus! 😊',         sub: 'Kamu bijak mengelola uang jajan hari ini!' },
+      'Mau Belajar!':   { title: 'Semangat! 💪',      sub: 'Tidak apa-apa! Yang penting mau belajar. Besok lebih baik!' },
+    }
+
+    const heroText = heroTexts[badge]
+    if (heroText) {
+      document.getElementById('heroTitle').textContent = heroText.title
+      document.getElementById('heroSub').textContent   = heroText.sub
+    }
+
+    // ── STREAK ─────────────────────────────────────────────────────────────
+    const today     = new Date().toDateString()
+    const lastVisit = localStorage.getItem('koin_last_visit')
+    let   streak    = parseInt(localStorage.getItem('koin_streak')) || 0
+
+    const yesterday = new Date()
+    yesterday.setDate(yesterday.getDate() - 1)
+
+    if (lastVisit === yesterday.toDateString()) {
+      streak++
+    } else if (lastVisit !== today) {
+      streak = 1
+    }
+
+    localStorage.setItem('koin_last_visit', today)
+    localStorage.setItem('koin_streak', streak)
+    document.getElementById('streakCount').textContent = streak
+
+    // ── WISHLIST PREVIEW ───────────────────────────────────────────────────
+    if (wishlist.length > 0) {
+      const preview = document.getElementById('wishlistPreview')
+      const list    = document.getElementById('wishlistPreviewList')
+      preview.style.display = 'block'
+
+      list.innerHTML = wishlist.slice(0, 3).map(item => `
+        <div class="wishlist-preview-item">
+          <div class="wishlist-preview-name">
+            🎁 ${item.name}
+            <span style="font-size:11px;color:rgba(255,255,255,0.3)">
+              Rp ${fmt(item.price)}
+            </span>
+          </div>
+          <div class="wishlist-preview-days">
+            ${item.days ? `⏳ ${item.days} hari` : '💪 Mulai nabung!'}
+          </div>
+        </div>`).join('')
+    }
+
+    // ── KONFETI ─────────────────────────────────────────────────────────────
+    function showKonfeti() {
+      const el     = document.getElementById('konfeti')
+      const colors = ['#F39C12','#E74C3C','#2ECC71','#3498DB','#9B59B6','#F1C40F','#1ABC9C']
+      for (let i = 0; i < 60; i++) {
+        const piece = document.createElement('div')
+        piece.className = 'konfeti-piece'
+        piece.style.cssText = `
+          left: ${Math.random()*100}%;
+          top: -10px;
+          background: ${colors[Math.floor(Math.random()*colors.length)]};
+          animation-delay: ${Math.random()*2}s;
+          animation-duration: ${2+Math.random()*2}s;
+          width: ${6+Math.random()*8}px;
+          height: ${6+Math.random()*8}px;
+        `
+        el.appendChild(piece)
+      }
+    }
+
+    showKonfeti()
+
+    // ── BAGIKAN ────────────────────────────────────────────────────────────
+    window.bagikan = function() {
+      const text =
+        `🪙 KOIN — Laporan Belajar Hari Ini\n\n` +
+        `👤 ${profession.name || '—'}\n` +
+        `💰 Uang Jajan: Rp ${fmt(allowance)}\n` +
+        `🛒 Belanja: Rp ${fmt(totalSpent)}\n` +
+        `⏰ = ${(totalSpent/perHour).toFixed(1)} jam kerja\n\n` +
+        `🪣 Celengan:\n` +
+        `  🛒 Spending: Rp ${fmt(celengan.spending||0)}\n` +
+        `  🐷 Saving:   Rp ${fmt(celengan.saving||0)}\n` +
+        `  🤝 Sharing:  Rp ${fmt(celengan.sharing||0)}\n\n` +
+        `🏅 Badge: ${badge}\n\n` +
+        `Belajar di KOIN — kenali.olah.ingat.nabung 🪙`
+
+      if (navigator.share) {
+        navigator.share({ title: 'KOIN — Laporan Belajar', text })
+      } else {
+        navigator.clipboard.writeText(text)
+        alert('Teks laporan sudah disalin! Paste ke WhatsApp orang tua ya 😊')
+      }
+    }
+  </script>
+
+</body>
+</html>

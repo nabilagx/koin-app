@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KOIN — Simulasi Kerja</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #EAF4FB 0%, #D6EAF8 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      max-width: 420px;
+      margin: 0 auto 20px;
+      gap: 12px;
+    }
+
+    .back-btn {
+      background: white;
+      border: none;
+      border-radius: 12px;
+      width: 40px; height: 40px;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: #1A5276;
+    }
+
+    .header-sub {
+      font-size: 12px;
+      color: #999;
+    }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap {
+      max-width: 420px;
+      margin: 0 auto 20px;
+    }
+
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .progress-steps::before {
+      content: '';
+      position: absolute;
+      top: 14px; left: 14px; right: 14px;
+      height: 2px;
+      background: #D6EAF8;
+      z-index: 0;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      z-index: 1;
+    }
+
+    .step-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #D6EAF8;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #999;
+    }
+
+    .step.active .step-circle {
+      background: #2E86C1;
+      color: white;
+    }
+
+    .step.done .step-circle {
+      background: #1E8449;
+      color: white;
+    }
+
+    .step-label {
+      font-size: 9px;
+      color: #999;
+      font-weight: 600;
+    }
+
+    .step.active .step-label { color: #2E86C1; }
+    .step.done  .step-label { color: #1E8449; }
+
+    /* ── SCENE CARD ── */
+    .scene-card {
+      background: white;
+      border-radius: 24px;
+      padding: 30px 24px;
+      max-width: 420px;
+      margin: 0 auto 20px;
+      box-shadow: 0 6px 30px rgba(0,0,0,0.08);
+      text-align: center;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .scene-emoji {
+      font-size: 80px;
+      display: block;
+      margin-bottom: 16px;
+      animation: float 2s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%       { transform: translateY(-10px); }
+    }
+
+    .scene-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #1A5276;
+      margin-bottom: 8px;
+    }
+
+    .scene-text {
+      font-size: 14px;
+      color: #666;
+      line-height: 1.7;
+      max-width: 320px;
+    }
+
+    .scene-text .highlight {
+      color: #E67E22;
+      font-weight: 700;
+    }
+
+    .scene-text .green {
+      color: #1E8449;
+      font-weight: 700;
+    }
+
+    /* ── PROGRESS ANIMASI ── */
+    .work-progress {
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    .work-progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #999;
+      margin-bottom: 6px;
+    }
+
+    .work-bar-wrap {
+      background: #EBF5FB;
+      border-radius: 20px;
+      height: 14px;
+      overflow: hidden;
+    }
+
+    .work-bar {
+      height: 100%;
+      border-radius: 20px;
+      background: linear-gradient(90deg, #2E86C1, #1A5276);
+      width: 0%;
+      transition: width 0.3s ease;
+    }
+
+    /* ── HASIL CARD ── */
+    .result-card {
+      background: linear-gradient(135deg, #1A5276, #0D2B6B);
+      border-radius: 20px;
+      padding: 20px;
+      max-width: 420px;
+      margin: 0 auto 20px;
+      color: white;
+      display: none;
+    }
+
+    .result-card.show { display: block; }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .result-row:last-child { border-bottom: none; }
+
+    .result-label {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+    }
+
+    .result-value {
+      font-size: 15px;
+      font-weight: 700;
+      color: #F9E79F;
+    }
+
+    .result-total {
+      text-align: center;
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 2px solid rgba(255,255,255,0.2);
+    }
+
+    .result-total-label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 4px;
+    }
+
+    .result-total-amount {
+      font-size: 32px;
+      font-weight: 900;
+      color: #F39C12;
+    }
+
+    .result-per-hour {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 4px;
+    }
+
+    /* ── PESAN MOTIVASI ── */
+    .motivation-card {
+      background: linear-gradient(135deg, #FDEBD0, #FAD7A0);
+      border-radius: 16px;
+      padding: 16px 20px;
+      max-width: 420px;
+      margin: 0 auto 20px;
+      display: none;
+      border-left: 4px solid #E67E22;
+    }
+
+    .motivation-card.show { display: block; }
+
+    .motivation-card p {
+      font-size: 13px;
+      color: #7D3C07;
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    .motivation-card .author {
+      font-size: 11px;
+      color: #E67E22;
+      font-weight: 700;
+      margin-top: 6px;
+      font-style: normal;
+    }
+
+    /* ── TOMBOL ── */
+    .btn-wrap {
+      max-width: 420px;
+      margin: 0 auto 30px;
+    }
+
+    .btn-next {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #F39C12, #E67E22);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(243,156,18,0.4);
+      transition: all 0.2s;
+      display: none;
+    }
+
+    .btn-next.show { display: block; }
+    .btn-next:hover { transform: translateY(-2px); }
+
+    /* ── SCENE TRANSITIONS ── */
+    .scene-card.fade-out {
+      animation: fadeOut 0.3s ease forwards;
+    }
+
+    .scene-card.fade-in {
+      animation: fadeIn 0.4s ease forwards;
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to   { opacity: 0; transform: translateY(-10px); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── COUNTER ANIMASI ── */
+    .counter {
+      font-size: 28px;
+      font-weight: 900;
+      color: #1E8449;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div>
+      <div class="header-title" id="headerTitle">Simulasi Kerja</div>
+      <div class="header-sub">Lihat Ayah/Ibu bekerja hari ini</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS STEPS -->
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step done">
+        <div class="step-circle">✓</div>
+        <div class="step-label">Profesi</div>
+      </div>
+      <div class="step active">
+        <div class="step-circle">2</div>
+        <div class="step-label">Simulasi</div>
+      </div>
+      <div class="step">
+        <div class="step-circle">3</div>
+        <div class="step-label">Jajan</div>
+      </div>
+      <div class="step">
+        <div class="step-circle">4</div>
+        <div class="step-label">Refleksi</div>
+      </div>
+      <div class="step">
+        <div class="step-circle">5</div>
+        <div class="step-label">Celengan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE CARD -->
+  <div class="scene-card" id="sceneCard">
+    <span class="scene-emoji" id="sceneEmoji">⏳</span>
+    <div class="scene-title" id="sceneTitle">Memuat...</div>
+    <div class="scene-text" id="sceneText">Sabar ya, sebentar lagi...</div>
+    <div class="work-progress" id="workProgress" style="display:none">
+      <div class="work-progress-label">
+        <span>Mulai bekerja...</span>
+        <span id="progressPercent">0%</span>
+      </div>
+      <div class="work-bar-wrap">
+        <div class="work-bar" id="workBar"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HASIL PENDAPATAN -->
+  <div class="result-card" id="resultCard">
+    <div class="result-row">
+      <span class="result-label">👤 Profesi</span>
+      <span class="result-value" id="resProf">—</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">⏰ Jam Kerja</span>
+      <span class="result-value" id="resHours">—</span>
+    </div>
+    <div class="result-row">
+      <span class="result-label">💰 Per Jam</span>
+      <span class="result-value" id="resPerHour">—</span>
+    </div>
+    <div class="result-total">
+      <div class="result-total-label">Total Pendapatan Hari Ini</div>
+      <div class="result-total-amount" id="resTotal">Rp 0</div>
+      <div class="result-per-hour" id="resNote">hasil kerja keras seharian penuh</div>
+    </div>
+  </div>
+
+  <!-- MOTIVASI -->
+  <div class="motivation-card" id="motivationCard">
+    <p id="motivationText">"..."</p>
+    <div class="author" id="motivationAuthor">— KOIN</div>
+  </div>
+
+  <!-- TOMBOL LANJUT -->
+  <div class="btn-wrap">
+    <button class="btn-next" id="btnNext" onclick="goToJajan()">
+      Sekarang Giliranku Jajan! 🛒
+    </button>
+  </div>
+
+  <script type="module" src="./navbar.js">
+    // ── DATA DARI SESSION STORAGE ──────────────────────────────────────────
+    const profession = JSON.parse(sessionStorage.getItem('profession'))
+    const allowance  = parseInt(sessionStorage.getItem('allowance'))
+
+    if (!profession || !allowance) {
+      window.location.href = 'index.html'
+    }
+
+    // ── EMOJI & SCENE MAP ──────────────────────────────────────────────────
+    const profData = {
+      'Petani': {
+        emoji: '👨‍🌾',
+        scenes: [
+          { emoji: '🌅', title: 'Subuh-subuh sudah bangun...', text: 'Jam 05.00 pagi. Saat kamu masih tidur nyenyak, <span class="highlight">Ayah sudah bangun</span> dan bersiap pergi ke sawah.' },
+          { emoji: '🚶', title: 'Jalan ke sawah...', text: 'Ayah berjalan kaki <span class="highlight">2 kilometer</span> menuju sawah sambil membawa cangkul dan perlengkapan bertani.' },
+          { emoji: '☀️', title: 'Bekerja di bawah terik matahari...', text: 'Ayah bekerja dari pagi hingga siang di bawah <span class="highlight">terik matahari</span> tanpa henti. Keringat bercucuran tapi Ayah tetap semangat.' },
+          { emoji: '🌶️', title: 'Panen cabai hari ini!', text: 'Setelah bekerja keras, Ayah berhasil memanen <span class="highlight">8 kg cabai</span> dengan harga Rp8.000/kg dari ladang hari ini.' },
+        ],
+        unit: 'kg cabai dipanen',
+        unitValue: 8,
+      },
+      'Buruh Bangunan': {
+        emoji: '👷',
+        scenes: [
+          { emoji: '🌅', title: 'Berangkat pagi-pagi...', text: 'Jam 06.00 pagi. Ayah sudah berangkat ke lokasi proyek dengan <span class="highlight">naik angkot</span> agar tidak terlambat.' },
+          { emoji: '🧱', title: 'Mengangkat batu bata...', text: 'Ayah mengangkat <span class="highlight">ratusan batu bata</span> dan semen seharian. Tangannya kasar tapi hatinya penuh semangat.' },
+          { emoji: '🔨', title: 'Membangun dinding...', text: 'Di bawah panas matahari, Ayah membangun dinding <span class="highlight">meter demi meter</span> dengan teliti agar rumah orang lain berdiri kokoh.' },
+          { emoji: '🏗️', title: 'Selesai bekerja!', text: 'Setelah <span class="highlight">8 jam bekerja</span> penuh, proyek hari ini selesai. Ayah lelah tapi bangga bisa menafkahi keluarga.' },
+        ],
+        unit: 'jam bekerja',
+        unitValue: 8,
+      },
+      'Pedagang Warung': {
+        emoji: '🧑‍🍳',
+        scenes: [
+          { emoji: '🌄', title: 'Buka warung dari pagi...', text: 'Jam 05.30. Ibu sudah <span class="highlight">menyiapkan dagangan</span> — mengambil stok, menata barang, dan membuka warung sebelum tetangga bangun.' },
+          { emoji: '🛒', title: 'Melayani pembeli satu per satu...', text: 'Seharian Ibu melayani <span class="highlight">puluhan pembeli</span> dengan ramah. Kadang sibuk banget, kadang sepi — tapi Ibu tetap sabar.' },
+          { emoji: '🧮', title: 'Menghitung uang kembalian...', text: 'Ibu harus <span class="highlight">hitung dengan tepat</span> uang kembalian setiap pembeli. Tidak boleh salah satu rupiah pun!' },
+          { emoji: '🏪', title: 'Tutup warung, hitung penghasilan!', text: 'Setelah <span class="highlight">10 jam berjualan</span>, warung ditutup. Ibu menghitung penghasilan hari ini dengan penuh harap.' },
+        ],
+        unit: 'jam berjualan',
+        unitValue: 10,
+      },
+      'Nelayan': {
+        emoji: '🎣',
+        scenes: [
+          { emoji: '🌙', title: 'Berangkat tengah malam...', text: 'Jam 01.00 dini hari! Saat semua orang tidur, Ayah sudah <span class="highlight">mendayung perahu</span> menuju tengah laut yang gelap.' },
+          { emoji: '🌊', title: 'Berjuang melawan ombak...', text: 'Di tengah laut, Ayah menghadapi <span class="highlight">ombak besar</span> dan angin kencang. Tapi demi keluarga, Ayah tidak menyerah.' },
+          { emoji: '🐟', title: 'Menarik jaring ikan...', text: 'Setelah menunggu berjam-jam, Ayah menarik jaring dengan <span class="highlight">sekuat tenaga</span>. Tangannya lecet tapi hatinya bahagia melihat ikan.' },
+          { emoji: '⚓', title: 'Pulang membawa hasil!', text: 'Ayah pulang dengan membawa <span class="highlight">hasil tangkapan</span> yang dijual di TPI. Kerja keras semalam akhirnya terbayar.' },
+        ],
+        unit: 'kg ikan ditangkap',
+        unitValue: 15,
+      },
+    }
+
+    // ── SETUP ──────────────────────────────────────────────────────────────
+    const pData    = profData[profession.name] || profData['Petani']
+    const scenes   = pData.scenes
+    let sceneIndex = 0
+    let autoPlay   = null
+
+    document.getElementById('headerTitle').textContent = `Hari Kerja ${profession.name}`
+
+    // ── RENDER SCENE ───────────────────────────────────────────────────────
+    function renderScene(index, animate = false) {
+      const card = document.getElementById('sceneCard')
+      const scene = scenes[index]
+
+      if (animate) {
+        card.classList.add('fade-out')
+        setTimeout(() => {
+          card.classList.remove('fade-out')
+          updateScene(scene, index)
+          card.classList.add('fade-in')
+          setTimeout(() => card.classList.remove('fade-in'), 400)
+        }, 300)
+      } else {
+        updateScene(scene, index)
+      }
+    }
+
+    function updateScene(scene, index) {
+      document.getElementById('sceneEmoji').textContent = scene.emoji
+      document.getElementById('sceneTitle').textContent = scene.title
+      document.getElementById('sceneText').innerHTML    = scene.text
+
+      // Progress bar
+      const progress = document.getElementById('workProgress')
+      const bar      = document.getElementById('workBar')
+      const pct      = document.getElementById('progressPercent')
+
+      if (index >= 1) {
+        progress.style.display = 'block'
+        const pctVal = Math.round(((index) / (scenes.length - 1)) * 100)
+        setTimeout(() => {
+          bar.style.width = pctVal + '%'
+          pct.textContent = pctVal + '%'
+        }, 100)
+      }
+
+      // Scene terakhir — tampilkan hasil
+      if (index === scenes.length - 1) {
+        setTimeout(() => showResult(), 1000)
+      }
+    }
+
+    // ── KLIK SCENE (tap to continue) ───────────────────────────────────────
+    document.getElementById('sceneCard').addEventListener('click', () => {
+      if (sceneIndex < scenes.length - 1) {
+        sceneIndex++
+        renderScene(sceneIndex, true)
+      }
+    })
+
+    // ── SHOW RESULT ────────────────────────────────────────────────────────
+    function showResult() {
+      const resultCard = document.getElementById('resultCard')
+      const motivCard  = document.getElementById('motivationCard')
+      const btnNext    = document.getElementById('btnNext')
+
+      const incomeFormatted   = new Intl.NumberFormat('id-ID').format(profession.daily_income)
+      const perHour           = Math.round(profession.daily_income / profession.work_hours)
+      const perHourFormatted  = new Intl.NumberFormat('id-ID').format(perHour)
+
+      document.getElementById('resProf').textContent    = profession.name
+      document.getElementById('resHours').textContent   = profession.work_hours + ' jam'
+      document.getElementById('resPerHour').textContent = 'Rp' + perHourFormatted + '/jam'
+
+      // Animasi counter total
+      animateCounter('resTotal', 0, profession.daily_income, 1200, 'Rp')
+
+      resultCard.classList.add('show')
+
+      // Hitung perbandingan uang jajan vs pendapatan
+      const ratio = ((allowance / profession.daily_income) * 100).toFixed(0)
+      const allowanceFormatted = new Intl.NumberFormat('id-ID').format(allowance)
+
+      // Pesan motivasi berdasarkan rasio
+      let msg, author
+      if (ratio <= 20) {
+        msg    = `Uang jajanmu Rp${allowanceFormatted} hanya ${ratio}% dari pendapatan ${profession.name} hari ini. Ayah/Ibu bekerja sangat keras untukmu! Yuk, gunakan dengan bijak. 💛`
+        author = '— Ingat, setiap rupiah ada perjuangannya'
+      } else if (ratio <= 50) {
+        msg    = `Uang jajanmu Rp${allowanceFormatted} itu ${ratio}% dari pendapatan ${profession.name} hari ini. Cukup besar lho! Pastikan dipakai untuk hal yang benar-benar perlu ya. 🌟`
+        author = '— Bijak kelola, hidup lebih tenang'
+      } else {
+        msg    = `Wow, uang jajanmu Rp${allowanceFormatted} hampir separuh pendapatan harian ${profession.name}! Itu perjuangan yang besar banget. Hargai ya dengan tidak boros! 🙏`
+        author = '— Uang adalah hasil keringat, bukan hadiah'
+      }
+
+      document.getElementById('motivationText').textContent  = `"${msg}"`
+      document.getElementById('motivationAuthor').textContent = author
+
+      setTimeout(() => motivCard.classList.add('show'), 600)
+      setTimeout(() => btnNext.classList.add('show'), 1000)
+    }
+
+    // ── COUNTER ANIMASI ────────────────────────────────────────────────────
+    function animateCounter(elId, from, to, duration, prefix = '') {
+      const el    = document.getElementById(elId)
+      const start = performance.now()
+      function update(now) {
+        const elapsed = now - start
+        const progress = Math.min(elapsed / duration, 1)
+        const eased  = 1 - Math.pow(1 - progress, 3)
+        const current = Math.round(from + (to - from) * eased)
+        el.textContent = prefix + new Intl.NumberFormat('id-ID').format(current)
+        if (progress < 1) requestAnimationFrame(update)
+      }
+      requestAnimationFrame(update)
+    }
+
+    // ── LANJUT ────────────────────────────────────────────────────────────
+    window.goToJajan = function() {
+      window.location.href = 'jajan.html'
+    }
+
+    // ── AUTO PLAY ──────────────────────────────────────────────────────────
+    // Auto advance scene setiap 3 detik
+    function startAutoPlay() {
+      autoPlay = setInterval(() => {
+        if (sceneIndex < scenes.length - 1) {
+          sceneIndex++
+          renderScene(sceneIndex, true)
+        } else {
+          clearInterval(autoPlay)
+        }
+      }, 3000)
+    }
+
+    // ── INIT ───────────────────────────────────────────────────────────────
+    renderScene(0)
+    startAutoPlay()
+
+    // Tap scene card = skip autoplay ke scene berikutnya
+    document.getElementById('sceneCard').addEventListener('click', () => {
+      clearInterval(autoPlay)
+      if (sceneIndex < scenes.length - 1) {
+        sceneIndex++
+        renderScene(sceneIndex, true)
+        if (sceneIndex < scenes.length - 1) startAutoPlay()
+      }
+    })
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KOIN — Refleksi</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
+      min-height: 100vh;
+      padding: 20px;
+      padding-bottom: 40px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      max-width: 420px;
+      margin: 0 auto 20px;
+      gap: 12px;
+    }
+
+    .back-btn {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      border-radius: 12px;
+      width: 40px; height: 40px;
+      font-size: 18px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: white;
+    }
+
+    .header-title { font-size: 16px; font-weight: 700; color: white; }
+    .header-sub   { font-size: 12px; color: rgba(255,255,255,0.5); }
+
+    /* ── PROGRESS STEPS ── */
+    .progress-wrap { max-width: 420px; margin: 0 auto 24px; }
+
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .progress-steps::before {
+      content: '';
+      position: absolute;
+      top: 14px; left: 14px; right: 14px;
+      height: 2px;
+      background: rgba(255,255,255,0.1);
+      z-index: 0;
+    }
+
+    .step { display: flex; flex-direction: column; align-items: center; gap: 4px; z-index: 1; }
+
+    .step-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.1);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.3);
+    }
+
+    .step.active .step-circle { background: #F39C12; color: white; }
+    .step.done   .step-circle { background: #1E8449; color: white; }
+    .step-label  { font-size: 9px; color: rgba(255,255,255,0.3); font-weight: 600; }
+    .step.active .step-label  { color: #F39C12; }
+    .step.done   .step-label  { color: #1E8449; }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      text-align: center;
+      color: white;
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      opacity: 0.6;
+      margin-bottom: 12px;
+      max-width: 420px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* ── VS CARD ── */
+    .vs-container {
+      max-width: 420px;
+      margin: 0 auto 20px;
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .vs-card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 18px;
+      padding: 16px 12px;
+      text-align: center;
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .vs-card.work { border-color: rgba(39,174,96,0.4); background: rgba(39,174,96,0.08); }
+    .vs-card.spend { border-color: rgba(231,76,60,0.4); background: rgba(231,76,60,0.08); }
+
+    .vs-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .work  .vs-label { color: #7DCEA0; }
+    .spend .vs-label { color: #F1948A; }
+
+    .vs-emoji { font-size: 32px; display: block; margin-bottom: 8px; }
+
+    .vs-name {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 4px;
+    }
+
+    .vs-amount {
+      font-size: 18px;
+      font-weight: 900;
+    }
+
+    .work  .vs-amount { color: #2ECC71; }
+    .spend .vs-amount { color: #E74C3C; }
+
+    .vs-sub {
+      font-size: 10px;
+      color: rgba(255,255,255,0.4);
+      margin-top: 4px;
+    }
+
+    .vs-badge {
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 4px 8px;
+      font-size: 10px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 6px;
+    }
+
+    .vs-separator {
+      text-align: center;
+      font-size: 18px;
+      font-weight: 900;
+      color: #F39C12;
+    }
+
+    /* ── REFLEKSI MESSAGE ── */
+    .refleksi-msg {
+      max-width: 420px;
+      margin: 0 auto 20px;
+      background: rgba(243,156,18,0.1);
+      border: 1px solid rgba(243,156,18,0.3);
+      border-radius: 16px;
+      padding: 16px 20px;
+      text-align: center;
+    }
+
+    .refleksi-msg .big-text {
+      font-size: 22px;
+      font-weight: 900;
+      color: #F39C12;
+      margin-bottom: 6px;
+    }
+
+    .refleksi-msg .sub-text {
+      font-size: 13px;
+      color: rgba(255,255,255,0.7);
+      line-height: 1.6;
+    }
+
+    .refleksi-msg .quote {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      font-style: italic;
+      margin-top: 8px;
+    }
+
+    /* ── ITEM BREAKDOWN ── */
+    .breakdown-card {
+      max-width: 420px;
+      margin: 0 auto 20px;
+      background: rgba(255,255,255,0.04);
+      border-radius: 16px;
+      padding: 16px;
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .breakdown-title {
+      font-size: 11px;
+      color: rgba(255,255,255,0.4);
+      font-weight: 700;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
+    }
+
+    .breakdown-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+
+    .breakdown-item:last-child { border-bottom: none; }
+
+    .breakdown-left { display: flex; align-items: center; gap: 8px; }
+    .breakdown-emoji { font-size: 20px; }
+    .breakdown-name { font-size: 13px; color: rgba(255,255,255,0.8); }
+    .breakdown-qty  { font-size: 10px; color: rgba(255,255,255,0.3); }
+
+    .breakdown-right { text-align: right; }
+    .breakdown-price { font-size: 13px; font-weight: 700; color: #F39C12; }
+    .breakdown-hours { font-size: 10px; color: rgba(255,255,255,0.3); }
+
+    /* ── TIGA CELENGAN ── */
+    .celengan-section {
+      max-width: 420px;
+      margin: 0 auto 20px;
+    }
+
+    .celengan-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+      margin-bottom: 4px;
+    }
+
+    .celengan-sub {
+      font-size: 12px;
+      color: rgba(255,255,255,0.4);
+      margin-bottom: 16px;
+    }
+
+    .celengan-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 10px;
+    }
+
+    .celengan-card {
+      border-radius: 16px;
+      padding: 14px 10px;
+      text-align: center;
+      border: 2px solid transparent;
+      transition: all 0.2s;
+    }
+
+    .celengan-card.spending {
+      background: rgba(231,76,60,0.1);
+      border-color: rgba(231,76,60,0.3);
+    }
+
+    .celengan-card.saving {
+      background: rgba(39,174,96,0.1);
+      border-color: rgba(39,174,96,0.3);
+    }
+
+    .celengan-card.sharing {
+      background: rgba(155,89,182,0.1);
+      border-color: rgba(155,89,182,0.3);
+    }
+
+    .celengan-emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+
+    .celengan-label { font-size: 11px; font-weight: 700; margin-bottom: 4px; }
+    .spending .celengan-label { color: #E74C3C; }
+    .saving   .celengan-label { color: #2ECC71; }
+    .sharing  .celengan-label { color: #9B59B6; }
+
+    .celengan-desc { font-size: 9px; color: rgba(255,255,255,0.4); margin-bottom: 8px; }
+
+    .celengan-input-wrap {
+      background: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      padding: 6px 8px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .celengan-input-wrap span {
+      font-size: 9px;
+      color: rgba(255,255,255,0.3);
+    }
+
+    .celengan-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: 12px;
+      font-weight: 700;
+      color: white;
+      width: 100%;
+      text-align: right;
+    }
+
+    .celengan-amount {
+      font-size: 13px;
+      font-weight: 900;
+      margin-top: 6px;
+    }
+
+    .spending .celengan-amount { color: #E74C3C; }
+    .saving   .celengan-amount { color: #2ECC71; }
+    .sharing  .celengan-amount { color: #9B59B6; }
+
+    /* ── SISA ALOKASI ── */
+    .sisa-card {
+      max-width: 420px;
+      margin: 0 auto 20px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 14px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .sisa-label { font-size: 12px; color: rgba(255,255,255,0.5); }
+    .sisa-amount { font-size: 18px; font-weight: 900; color: #F39C12; }
+
+    .sisa-warn {
+      font-size: 11px;
+      color: #E74C3C;
+      margin-top: 2px;
+    }
+
+    /* ── BADGE ── */
+    .badge-card {
+      max-width: 420px;
+      margin: 0 auto 20px;
+      text-align: center;
+      display: none;
+    }
+
+    .badge-card.show { display: block; }
+
+    .badge-emoji {
+      font-size: 60px;
+      display: block;
+      margin-bottom: 8px;
+      animation: pop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes pop {
+      from { transform: scale(0); opacity: 0; }
+      to   { transform: scale(1); opacity: 1; }
+    }
+
+    .badge-name {
+      font-size: 20px;
+      font-weight: 900;
+      color: #F39C12;
+      margin-bottom: 4px;
+    }
+
+    .badge-desc {
+      font-size: 13px;
+      color: rgba(255,255,255,0.5);
+    }
+
+    /* ── TOMBOL ── */
+    .btn-wrap {
+      max-width: 420px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-selesai {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #F39C12, #E67E22);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(243,156,18,0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-selesai:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-selesai:not(:disabled):hover { transform: translateY(-2px); }
+
+    .btn-ulang {
+      width: 100%;
+      padding: 14px;
+      background: rgba(255,255,255,0.05);
+      color: rgba(255,255,255,0.6);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-ulang:hover { background: rgba(255,255,255,0.1); }
+
+    /* ── ANIMASI MASUK ── */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeUp 0.5s ease forwards;
+    }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+    .delay-4 { animation-delay: 0.4s; }
+    .delay-5 { animation-delay: 0.5s; }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div>
+      <div class="header-title">💡 Refleksi Hari Ini</div>
+      <div class="header-sub">Sadar nilai uang, bijak kelola</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Profesi</div></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Simulasi</div></div>
+      <div class="step done"><div class="step-circle">✓</div><div class="step-label">Jajan</div></div>
+      <div class="step active"><div class="step-circle">4</div><div class="step-label">Refleksi</div></div>
+      <div class="step"><div class="step-circle">5</div><div class="step-label">Celengan</div></div>
+    </div>
+  </div>
+
+  <!-- VS CARD -->
+  <div class="section-title fade-up">⚖️ PERBANDINGAN HARI INI</div>
+  <div class="vs-container fade-up delay-1">
+    <div class="vs-card work">
+      <div class="vs-label">KERJA AYAH/IBU</div>
+      <span class="vs-emoji" id="workEmoji">👨‍🌾</span>
+      <div class="vs-name" id="workName">Petani</div>
+      <div class="vs-amount" id="workAmount">Rp 0</div>
+      <div class="vs-sub" id="workHours">8 jam kerja</div>
+      <div class="vs-badge" id="workBadge">Hasil kerja seharian</div>
+    </div>
+
+    <div class="vs-separator">VS</div>
+
+    <div class="vs-card spend">
+      <div class="vs-label">JAJAN KAMU</div>
+      <span class="vs-emoji">🛒</span>
+      <div class="vs-name">Pengeluaran</div>
+      <div class="vs-amount" id="spendAmount">Rp 0</div>
+      <div class="vs-sub" id="spendHours">0 jam kerja</div>
+      <div class="vs-badge" id="spendBadge">dari uang jajan</div>
+    </div>
+  </div>
+
+  <!-- REFLEKSI MESSAGE -->
+  <div class="refleksi-msg fade-up delay-2">
+    <div class="big-text" id="refleksiEmoji">😊</div>
+    <div class="sub-text" id="refleksiText">...</div>
+    <div class="quote" id="refleksiQuote">— KOIN</div>
+  </div>
+
+  <!-- ITEM BREAKDOWN -->
+  <div class="breakdown-card fade-up delay-2">
+    <div class="breakdown-title">🧾 DETAIL BELANJAAN</div>
+    <div id="breakdownList"></div>
+  </div>
+
+  <!-- TIGA CELENGAN -->
+  <div class="celengan-section fade-up delay-3">
+    <div class="celengan-title">🪣 Bagi ke Tiga Celengan</div>
+    <div class="celengan-sub">Sisa uang jajan Rp <span id="sisaLabel">0</span> — bagi sekarang!</div>
+
+    <div class="celengan-cards">
+      <div class="celengan-card spending">
+        <span class="celengan-emoji">🛒</span>
+        <div class="celengan-label">SPENDING</div>
+        <div class="celengan-desc">Boleh dipakai</div>
+        <div class="celengan-input-wrap">
+          <span>Rp</span>
+          <input class="celengan-input" id="inputSpending" type="number"
+                 placeholder="0" oninput="updateCelengan()" min="0"/>
+        </div>
+      </div>
+
+      <div class="celengan-card saving">
+        <span class="celengan-emoji">🐷</span>
+        <div class="celengan-label">SAVING</div>
+        <div class="celengan-desc">Ditabung</div>
+        <div class="celengan-input-wrap">
+          <span>Rp</span>
+          <input class="celengan-input" id="inputSaving" type="number"
+                 placeholder="0" oninput="updateCelengan()" min="0"/>
+        </div>
+      </div>
+
+      <div class="celengan-card sharing">
+        <span class="celengan-emoji">🤝</span>
+        <div class="celengan-label">SHARING</div>
+        <div class="celengan-desc">Berbagi</div>
+        <div class="celengan-input-wrap">
+          <span>Rp</span>
+          <input class="celengan-input" id="inputSharing" type="number"
+                 placeholder="0" oninput="updateCelengan()" min="0"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SISA ALOKASI -->
+  <div class="sisa-card fade-up delay-3">
+    <div>
+      <div class="sisa-label">Sisa belum dialokasikan</div>
+      <div class="sisa-warn" id="sisaWarn"></div>
+    </div>
+    <div class="sisa-amount" id="sisaAmount">Rp 0</div>
+  </div>
+
+  <!-- BADGE -->
+  <div class="badge-card" id="badgeCard">
+    <span class="badge-emoji" id="badgeEmoji">🏅</span>
+    <div class="badge-name" id="badgeName">Anak Bijak!</div>
+    <div class="badge-desc" id="badgeDesc">Kamu hebat hari ini!</div>
+  </div>
+
+  <!-- TOMBOL -->
+  <div class="btn-wrap fade-up delay-4">
+    <button class="btn-selesai" id="btnSelesai" onclick="selesai()" disabled>
+      Simpan & Selesai 🎉
+    </button>
+    <button class="btn-ulang" onclick="window.location.href='index.html'">
+      🔄 Mulai Lagi
+    </button>
+  </div>
+
+  <script type="module" src="./navbar.js">
+    import { supabase } from './supabase.js'
+
+    // ── DATA ───────────────────────────────────────────────────────────────
+    const profession  = JSON.parse(sessionStorage.getItem('profession'))
+    const allowance   = parseInt(sessionStorage.getItem('allowance'))
+    const cart        = JSON.parse(sessionStorage.getItem('cart')) || []
+    const totalSpent  = parseInt(sessionStorage.getItem('totalSpent')) || 0
+    const sisa        = allowance - totalSpent
+
+    if (!profession || !allowance) window.location.href = 'index.html'
+
+    const perHour = profession.daily_income / profession.work_hours
+    const fmt     = n => new Intl.NumberFormat('id-ID').format(n)
+
+    // ── EMOJI MAP ──────────────────────────────────────────────────────────
+    const emojiMap = {
+      'Petani': '👨‍🌾', 'Buruh Bangunan': '👷',
+      'Pedagang Warung': '🧑‍🍳', 'Nelayan': '🎣',
+    }
+
+    // ── RENDER VS CARD ─────────────────────────────────────────────────────
+    document.getElementById('workEmoji').textContent   = emojiMap[profession.name] || '👤'
+    document.getElementById('workName').textContent    = profession.name
+    document.getElementById('workAmount').textContent  = 'Rp ' + fmt(profession.daily_income)
+    document.getElementById('workHours').textContent   = profession.work_hours + ' jam kerja'
+
+    const spendHours = (totalSpent / perHour).toFixed(1)
+    document.getElementById('spendAmount').textContent = 'Rp ' + fmt(totalSpent)
+    document.getElementById('spendHours').textContent  = spendHours + ' jam kerja'
+    document.getElementById('spendBadge').textContent  =
+      `${((totalSpent/profession.daily_income)*100).toFixed(0)}% pendapatan ${profession.name}`
+
+    // ── REFLEKSI MESSAGE ───────────────────────────────────────────────────
+    const ratio = (totalSpent / profession.daily_income) * 100
+
+    let emoji, msg, quote
+    if (ratio === 0) {
+      emoji = '🌟'; msg = `Luar biasa! Kamu tidak belanja apapun hari ini. Semua uang bisa ditabung!`
+      quote = '— Hemat pangkal kaya!'
+    } else if (ratio <= 25) {
+      emoji = '😊'; msg = `Keren banget! Kamu hanya menghabiskan ${ratio.toFixed(0)}% dari pendapatan ${profession.name}. Kamu anak yang bijak!`
+      quote = '— Uang sedikit pun berharga'
+    } else if (ratio <= 50) {
+      emoji = '🤔'; msg = `Belanjaanmu ${ratio.toFixed(0)}% dari pendapatan ${profession.name} hari ini. Lumayan besar. Besok coba lebih hemat ya!`
+      quote = '— Bijak hari ini, tenang hari esok'
+    } else if (ratio <= 75) {
+      emoji = '😮'; msg = `Wow! ${ratio.toFixed(0)}% pendapatan ${profession.name} habis untuk jajanmu. Bayangkan betapa lelahnya mereka bekerja!`
+      quote = '— Setiap rupiah ada perjuangannya'
+    } else {
+      emoji = '😢'; msg = `${ratio.toFixed(0)}% kerja keras ${profession.name} habis hari ini. Itu ${spendHours} jam kerja! Yuk, lebih hargai uang mulai besok. 🙏`
+      quote = '— Uang adalah waktu dan tenaga orang tua'
+    }
+
+    document.getElementById('refleksiEmoji').textContent = emoji
+    document.getElementById('refleksiText').textContent  = msg
+    document.getElementById('refleksiQuote').textContent = quote
+
+    // ── BREAKDOWN ──────────────────────────────────────────────────────────
+    const breakdownList = document.getElementById('breakdownList')
+    if (cart.length === 0) {
+      breakdownList.innerHTML = '<div style="text-align:center;color:rgba(255,255,255,0.3);font-size:13px;padding:10px">Tidak ada belanjaan hari ini 🌟</div>'
+    } else {
+      cart.forEach(item => {
+        const hours = ((item.price * item.qty) / perHour).toFixed(1)
+        breakdownList.innerHTML += `
+          <div class="breakdown-item">
+            <div class="breakdown-left">
+              <span class="breakdown-emoji">${item.emoji}</span>
+              <div>
+                <div class="breakdown-name">${item.name} ${item.qty > 1 ? `×${item.qty}` : ''}</div>
+                <div class="breakdown-qty">≈ ${hours} jam kerja</div>
+              </div>
+            </div>
+            <div class="breakdown-right">
+              <div class="breakdown-price">Rp ${fmt(item.price * item.qty)}</div>
+            </div>
+          </div>`
+      })
+    }
+
+    // ── CELENGAN ───────────────────────────────────────────────────────────
+    document.getElementById('sisaLabel').textContent = fmt(sisa)
+
+    window.updateCelengan = function() {
+      const s = parseInt(document.getElementById('inputSpending').value) || 0
+      const v = parseInt(document.getElementById('inputSaving').value)   || 0
+      const b = parseInt(document.getElementById('inputSharing').value)  || 0
+
+      const total = s + v + b
+      const remaining = sisa - total
+
+      document.getElementById('sisaAmount').textContent = 'Rp ' + fmt(Math.max(remaining, 0))
+
+      if (total > sisa) {
+        document.getElementById('sisaWarn').textContent = '⚠️ Melebihi sisa uang!'
+        document.getElementById('btnSelesai').disabled = true
+      } else if (remaining === 0) {
+        document.getElementById('sisaWarn').textContent = ''
+        document.getElementById('btnSelesai').disabled = false
+        showBadge(s, v, b)
+      } else {
+        document.getElementById('sisaWarn').textContent = `Sisa Rp${fmt(remaining)} belum dialokasikan`
+        document.getElementById('btnSelesai').disabled = true
+      }
+    }
+
+    // ── BADGE ──────────────────────────────────────────────────────────────
+    function showBadge(spending, saving, sharing) {
+      const badgeCard = document.getElementById('badgeCard')
+      let badgeEmoji, badgeName, badgeDesc
+
+      const savingPct  = saving / sisa * 100
+      const sharingPct = sharing / sisa * 100
+
+      if (ratio <= 25 && savingPct >= 50) {
+        badgeEmoji = '🏆'; badgeName = 'Super Hemat!'
+        badgeDesc  = 'Kamu hemat dan banyak menabung. Luar biasa!'
+      } else if (sharingPct >= 20) {
+        badgeEmoji = '💛'; badgeName = 'Si Dermawan!'
+        badgeDesc  = 'Kamu suka berbagi. Rezekimu akan bertambah!'
+      } else if (savingPct >= 50) {
+        badgeEmoji = '🐷'; badgeName = 'Raja Tabungan!'
+        badgeDesc  = 'Lebih dari separuh uang kamu tabung. Keren!'
+      } else if (ratio <= 50) {
+        badgeEmoji = '😊'; badgeName = 'Anak Bijak!'
+        badgeDesc  = 'Kamu bijak mengatur uang hari ini!'
+      } else {
+        badgeEmoji = '💪'; badgeName = 'Mau Belajar!'
+        badgeDesc  = 'Hari ini boros, tapi besok pasti lebih baik!'
+      }
+
+      document.getElementById('badgeEmoji').textContent = badgeEmoji
+      document.getElementById('badgeName').textContent  = badgeName
+      document.getElementById('badgeDesc').textContent  = badgeDesc
+      badgeCard.classList.add('show')
+    }
+
+    // ── SELESAI ────────────────────────────────────────────────────────────
+    window.selesai = async function() {
+      const s = parseInt(document.getElementById('inputSpending').value) || 0
+      const v = parseInt(document.getElementById('inputSaving').value)   || 0
+      const b = parseInt(document.getElementById('inputSharing').value)  || 0
+
+      // Simpan ke sessionStorage untuk dashboard
+      sessionStorage.setItem('celengan', JSON.stringify({
+        spending: s, saving: v, sharing: b
+      }))
+
+      // Coba simpan ke Supabase kalau ada user login
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+          // Simpan transactions
+          const txData = cart.map(item => ({
+            child_id: user.id,
+            type: 'jajan',
+            amount: item.price * item.qty,
+            item_name: item.name,
+            equivalent_work_hours: parseFloat(((item.price * item.qty) / perHour).toFixed(2)),
+          }))
+          if (txData.length > 0) {
+            await supabase.from('transactions').insert(txData)
+          }
+
+          // Update balances
+          await supabase.from('profiles')
+            .update({
+              spending_balance: s,
+              saving_balance:   v,
+              sharing_balance:  b,
+            })
+            .eq('id', user.id)
+
+          // Simpan badge
+          const badgeName = document.getElementById('badgeName').textContent
+          await supabase.from('badges').insert({
+            child_id:   user.id,
+            badge_type: badgeName,
+          })
+        }
+      } catch (e) {
+        console.log('Simpan ke DB gagal (mungkin belum login):', e)
+      }
+
+      window.location.href = 'wishlist.html'
+    }
+  </script>
+</body>
+</html>

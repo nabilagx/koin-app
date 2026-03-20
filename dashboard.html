@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KOIN — Dashboard Orang Tua</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #F0F4F8;
+      min-height: 100vh;
+      padding-bottom: 40px;
+    }
+
+    /* ── TOPBAR ── */
+    .topbar {
+      background: linear-gradient(135deg, #0D2B6B, #1A5276);
+      padding: 20px 20px 30px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .topbar::after {
+      content: '';
+      position: absolute;
+      bottom: -20px; left: 0; right: 0;
+      height: 40px;
+      background: #F0F4F8;
+      border-radius: 50% 50% 0 0;
+    }
+
+    .topbar-inner {
+      max-width: 420px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    .topbar-greeting {
+      font-size: 13px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 2px;
+    }
+
+    .topbar-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: white;
+    }
+
+    .topbar-logo {
+      font-size: 22px;
+      font-weight: 900;
+      color: #F39C12;
+      letter-spacing: 2px;
+    }
+
+    .btn-logout {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: rgba(255,255,255,0.6);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    /* ── CONTENT ── */
+    .content {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* ── CHILD SELECTOR ── */
+    .child-selector {
+      margin-bottom: 16px;
+      margin-top: 8px;
+    }
+
+    .child-selector-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #999;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .child-tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .child-tabs::-webkit-scrollbar { display: none; }
+
+    .child-tab {
+      background: white;
+      border: 2px solid #EEE;
+      border-radius: 20px;
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #999;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .child-tab.active {
+      border-color: #F39C12;
+      color: #F39C12;
+      background: #FEF9E7;
+    }
+
+    /* ── STATS GRID ── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .stat-card.wide {
+      grid-column: span 2;
+    }
+
+    .stat-icon { font-size: 22px; margin-bottom: 6px; display: block; }
+
+    .stat-label {
+      font-size: 10px;
+      color: #999;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 900;
+      color: #1A5276;
+    }
+
+    .stat-sub {
+      font-size: 10px;
+      color: #CCC;
+      margin-top: 2px;
+    }
+
+    /* ── CELENGAN CARD ── */
+    .celengan-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .card-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #1A5276;
+      margin-bottom: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-badge {
+      background: #EBF5FB;
+      color: #2E86C1;
+      border-radius: 20px;
+      padding: 2px 8px;
+      font-size: 10px;
+      font-weight: 600;
+    }
+
+    .celengan-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+
+    .celengan-item {
+      text-align: center;
+      padding: 10px 6px;
+      border-radius: 12px;
+    }
+
+    .spending-bg { background: #FADBD8; }
+    .saving-bg   { background: #D5F5E3; }
+    .sharing-bg  { background: #E8DAEF; }
+
+    .celengan-emoji  { font-size: 20px; display: block; margin-bottom: 4px; }
+    .celengan-label  { font-size: 9px; color: #666; margin-bottom: 4px; }
+    .celengan-amount { font-size: 12px; font-weight: 700; }
+
+    .spending-text { color: #C0392B; }
+    .saving-text   { color: #1E8449; }
+    .sharing-text  { color: #6C3483; }
+
+    /* ── PROGRESS BAR ── */
+    .progress-wrap { margin-top: 10px; }
+
+    .progress-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .progress-label { font-size: 11px; color: #666; width: 60px; flex-shrink: 0; }
+
+    .progress-bar-wrap {
+      flex: 1;
+      background: #F0F0F0;
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.8s ease;
+    }
+
+    .fill-spending { background: linear-gradient(90deg, #E74C3C, #C0392B); }
+    .fill-saving   { background: linear-gradient(90deg, #2ECC71, #1E8449); }
+    .fill-sharing  { background: linear-gradient(90deg, #9B59B6, #6C3483); }
+
+    .progress-pct { font-size: 11px; font-weight: 700; color: #666; width: 30px; text-align: right; }
+
+    /* ── AKTIVITAS TERBARU ── */
+    .activity-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .activity-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid #F8F8F8;
+    }
+
+    .activity-item:last-child { border-bottom: none; }
+
+    .activity-icon {
+      width: 36px; height: 36px;
+      border-radius: 10px;
+      background: #FEF9E7;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .activity-info { flex: 1; }
+
+    .activity-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #1A5276;
+    }
+
+    .activity-time {
+      font-size: 10px;
+      color: #CCC;
+      margin-top: 1px;
+    }
+
+    .activity-amount {
+      font-size: 13px;
+      font-weight: 700;
+      color: #E74C3C;
+    }
+
+    .activity-hours {
+      font-size: 10px;
+      color: #CCC;
+      text-align: right;
+    }
+
+    /* ── WISHLIST ── */
+    .wishlist-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .wl-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #F8F8F8;
+    }
+
+    .wl-item:last-child { border-bottom: none; }
+
+    .wl-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 6px;
+    }
+
+    .wl-name  { font-size: 13px; font-weight: 600; color: #1A5276; }
+    .wl-price { font-size: 12px; color: #9B59B6; font-weight: 600; }
+
+    .wl-bar-wrap {
+      background: #F0F0F0;
+      border-radius: 10px;
+      height: 6px;
+      overflow: hidden;
+      margin-bottom: 4px;
+    }
+
+    .wl-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      background: linear-gradient(90deg, #9B59B6, #6C3483);
+      transition: width 0.8s ease;
+    }
+
+    .wl-bar-fill.achieved {
+      background: linear-gradient(90deg, #2ECC71, #1E8449);
+    }
+
+    .wl-info {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      color: #CCC;
+    }
+
+    /* ── BADGES ── */
+    .badges-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+    }
+
+    .badges-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .badge-chip {
+      background: #FEF9E7;
+      border: 1px solid #F9E79F;
+      border-radius: 20px;
+      padding: 6px 12px;
+      font-size: 12px;
+      color: #7D6608;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-state {
+      text-align: center;
+      padding: 30px 20px;
+      color: #CCC;
+    }
+
+    .empty-state span { font-size: 36px; display: block; margin-bottom: 8px; }
+    .empty-state p    { font-size: 13px; }
+
+    /* ── LOADING ── */
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: #F39C12;
+      font-size: 14px;
+    }
+
+    /* ── PESAN KE ANAK ── */
+    .msg-card {
+      background: linear-gradient(135deg, #FEF9E7, #FFF3CC);
+      border: 2px solid #F9E79F;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .msg-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #7D6608;
+      margin-bottom: 8px;
+    }
+
+    .msg-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid #F9E79F;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #333;
+      outline: none;
+      background: white;
+      margin-bottom: 8px;
+    }
+
+    .btn-send-msg {
+      background: linear-gradient(135deg, #F39C12, #E67E22);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ── NO CHILD ── */
+    .no-child-card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px 20px;
+      text-align: center;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+      margin-bottom: 16px;
+    }
+
+    .no-child-card .big { font-size: 50px; display: block; margin-bottom: 12px; }
+    .no-child-card h3   { font-size: 16px; color: #1A5276; margin-bottom: 8px; }
+    .no-child-card p    { font-size: 12px; color: #999; line-height: 1.6; }
+
+    .code-display {
+      background: #EBF5FB;
+      border: 2px dashed #2E86C1;
+      border-radius: 12px;
+      padding: 12px;
+      margin: 12px 0;
+      font-size: 20px;
+      font-weight: 900;
+      color: #1A5276;
+      letter-spacing: 3px;
+    }
+
+    .btn-copy {
+      background: #2E86C1;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 8px 16px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: #999;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div>
+        <div class="topbar-greeting">Selamat datang,</div>
+        <div class="topbar-name" id="parentName">Orang Tua</div>
+        <button class="btn-logout" onclick="logout()">Keluar</button>
+      </div>
+      <div class="topbar-logo">🪙 KOIN</div>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content" id="mainContent">
+    <div class="loading-state">⏳ Memuat data...</div>
+  </div>
+
+  <script type="module">
+  import { supabase } from './supabase.js'
+
+    const fmt = n => new Intl.NumberFormat('id-ID').format(n)
+
+    let currentChild = null
+    let children     = []
+    let parentUser   = null
+
+    // ── INIT ───────────────────────────────────────────────────────────────
+    async function init() {
+      const { data: { session } } = await supabase.auth.getSession()
+
+      // Mode demo / guest
+      if (!session) {
+        renderDemoMode()
+        return
+      }
+
+      parentUser = session.user
+
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', parentUser.id)
+        .single()
+
+        console.log('Profile:', profile)
+        console.log('Profile error:', profileError)
+
+      if (!profile || profile.role !== 'parent') {
+        // Bukan parent — redirect ke index
+        window.location.href = 'index.html'
+        return
+      }
+
+      document.getElementById('parentName').textContent = profile.name
+
+      // Ambil daftar anak
+      const { data: childList } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('parent_id', parentUser.id)
+        .eq('role', 'child')
+
+      children = childList || []
+
+      if (children.length === 0) {
+        renderNoChild(profile)
+      } else {
+        currentChild = children[0]
+        renderDashboard()
+      }
+    }
+
+    // ── RENDER DASHBOARD ───────────────────────────────────────────────────
+    async function renderDashboard() {
+      const content = document.getElementById('mainContent')
+
+      // Ambil data anak
+      const { data: transactions } = await supabase
+        .from('transactions')
+        .select('*')
+        .eq('child_id', currentChild.id)
+        .order('created_at', { ascending: false })
+        .limit(20)
+
+      const { data: wishlists } = await supabase
+        .from('wishlists')
+        .select('*')
+        .eq('child_id', currentChild.id)
+        .order('created_at', { ascending: false })
+
+      const { data: badges } = await supabase
+        .from('badges')
+        .select('*')
+        .eq('child_id', currentChild.id)
+        .order('earned_at', { ascending: false })
+        .limit(10)
+
+      const txList = transactions || []
+      const wlList = wishlists   || []
+      const bgList = badges      || []
+
+      // Hitung stats
+      const totalSpent    = txList.filter(t => t.type === 'jajan')
+        .reduce((s, t) => s + t.amount, 0)
+      const totalSaved    = currentChild.saving_balance  || 0
+      const totalShared   = currentChild.sharing_balance || 0
+      const totalHours    = txList.reduce((s, t) => s + (t.equivalent_work_hours || 0), 0)
+
+      content.innerHTML = `
+
+        <!-- CHILD SELECTOR -->
+        ${children.length > 1 ? `
+        <div class="child-selector">
+          <div class="child-selector-label">PILIH ANAK</div>
+          <div class="child-tabs">
+            ${children.map(c => `
+              <div class="child-tab ${c.id === currentChild.id ? 'active' : ''}"
+                   onclick="switchChild('${c.id}')">
+                👦 ${c.name}
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
+
+        <!-- STATS -->
+        <div class="section-label">📊 STATISTIK ${currentChild.name.toUpperCase()}</div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <span class="stat-icon">🛒</span>
+            <div class="stat-label">Total Belanja</div>
+            <div class="stat-value" style="font-size:16px">Rp ${fmt(totalSpent)}</div>
+            <div class="stat-sub">${txList.filter(t=>t.type==='jajan').length} transaksi</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🐷</span>
+            <div class="stat-label">Total Tabungan</div>
+            <div class="stat-value" style="font-size:16px;color:#1E8449">Rp ${fmt(totalSaved)}</div>
+            <div class="stat-sub">celengan saving</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">⏰</span>
+            <div class="stat-label">Jam Kerja Terpakai</div>
+            <div class="stat-value">${totalHours.toFixed(1)}</div>
+            <div class="stat-sub">jam kerja orang tua</div>
+          </div>
+          <div class="stat-card">
+            <span class="stat-icon">🏅</span>
+            <div class="stat-label">Badge Didapat</div>
+            <div class="stat-value">${bgList.length}</div>
+            <div class="stat-sub">pencapaian</div>
+          </div>
+        </div>
+
+        <!-- CELENGAN -->
+        <div class="celengan-card">
+          <div class="card-title">
+            🪣 Saldo Celengan
+            <span class="card-badge">Hari Ini</span>
+          </div>
+          <div class="celengan-row">
+            <div class="celengan-item spending-bg">
+              <span class="celengan-emoji">🛒</span>
+              <div class="celengan-label">Spending</div>
+              <div class="celengan-amount spending-text">
+                Rp ${fmt(currentChild.spending_balance || 0)}
+              </div>
+            </div>
+            <div class="celengan-item saving-bg">
+              <span class="celengan-emoji">🐷</span>
+              <div class="celengan-label">Saving</div>
+              <div class="celengan-amount saving-text">
+                Rp ${fmt(currentChild.saving_balance || 0)}
+              </div>
+            </div>
+            <div class="celengan-item sharing-bg">
+              <span class="celengan-emoji">🤝</span>
+              <div class="celengan-label">Sharing</div>
+              <div class="celengan-amount sharing-text">
+                Rp ${fmt(currentChild.sharing_balance || 0)}
+              </div>
+            </div>
+          </div>
+
+          <!-- Progress -->
+          <div class="progress-wrap">
+            ${renderProgressBar('Spending', currentChild.spending_balance||0,
+              (currentChild.spending_balance||0)+(currentChild.saving_balance||0)+(currentChild.sharing_balance||0),
+              'fill-spending')}
+            ${renderProgressBar('Saving', currentChild.saving_balance||0,
+              (currentChild.spending_balance||0)+(currentChild.saving_balance||0)+(currentChild.sharing_balance||0),
+              'fill-saving')}
+            ${renderProgressBar('Sharing', currentChild.sharing_balance||0,
+              (currentChild.spending_balance||0)+(currentChild.saving_balance||0)+(currentChild.sharing_balance||0),
+              'fill-sharing')}
+          </div>
+        </div>
+
+        <!-- AKTIVITAS TERBARU -->
+        <div class="activity-card">
+          <div class="card-title">
+            📋 Aktivitas Terbaru
+            <span class="card-badge">${txList.length} transaksi</span>
+          </div>
+          ${txList.length === 0
+            ? `<div class="empty-state"><span>📭</span><p>Belum ada aktivitas</p></div>`
+            : txList.slice(0, 8).map(tx => `
+              <div class="activity-item">
+                <div class="activity-icon">
+                  ${tx.type === 'jajan' ? '🛒' : tx.type === 'saving' ? '🐷' : '🤝'}
+                </div>
+                <div class="activity-info">
+                  <div class="activity-name">${tx.item_name || tx.type}</div>
+                  <div class="activity-time">
+                    ${new Date(tx.created_at).toLocaleDateString('id-ID',
+                      {day:'numeric',month:'short',year:'numeric'})}
+                  </div>
+                </div>
+                <div>
+                  <div class="activity-amount">Rp ${fmt(tx.amount)}</div>
+                  <div class="activity-hours">
+                    ${tx.equivalent_work_hours
+                      ? `≈ ${tx.equivalent_work_hours} jam kerja` : ''}
+                  </div>
+                </div>
+              </div>`).join('')}
+        </div>
+
+        <!-- WISHLIST -->
+        ${wlList.length > 0 ? `
+        <div class="wishlist-card">
+          <div class="card-title">
+            🎯 Target Wishlist
+            <span class="card-badge">${wlList.length} item</span>
+          </div>
+          ${wlList.map(wl => {
+            const pct = Math.min(
+              ((currentChild.saving_balance||0) / wl.target_amount) * 100, 100
+            )
+            const achieved = pct >= 100
+            return `
+              <div class="wl-item">
+                <div class="wl-header">
+                  <div class="wl-name">🎁 ${wl.item_name}</div>
+                  <div class="wl-price">Rp ${fmt(wl.target_amount)}</div>
+                </div>
+                <div class="wl-bar-wrap">
+                  <div class="wl-bar-fill ${achieved ? 'achieved' : ''}"
+                       style="width:${pct}%"></div>
+                </div>
+                <div class="wl-info">
+                  <span>${pct.toFixed(0)}% terkumpul</span>
+                  <span>${achieved ? '🎉 Tercapai!' : `Kurang Rp ${fmt(wl.target_amount - (currentChild.saving_balance||0))}`}</span>
+                </div>
+              </div>`
+          }).join('')}
+        </div>` : ''}
+
+        <!-- BADGES -->
+        ${bgList.length > 0 ? `
+        <div class="badges-card">
+          <div class="card-title">🏅 Badge Didapat</div>
+          <div class="badges-row">
+            ${bgList.map(b => `
+              <div class="badge-chip">
+                ${getBadgeEmoji(b.badge_type)} ${b.badge_type}
+              </div>`).join('')}
+          </div>
+        </div>` : ''}
+
+        <!-- PESAN KE ANAK -->
+        <div class="msg-card">
+          <div class="msg-label">💬 Kirim Pesan Semangat ke ${currentChild.name}</div>
+          <input class="msg-input" id="msgInput"
+                 placeholder="Ayah/Ibu bangga sama kamu! Terus semangat ya... 💛"
+                 maxlength="100"/>
+          <button class="btn-send-msg" onclick="sendMessage()">Kirim 📤</button>
+        </div>
+      `
+    }
+
+    // ── HELPERS ────────────────────────────────────────────────────────────
+    function renderProgressBar(label, value, total, fillClass) {
+      const pct = total > 0 ? Math.round((value/total)*100) : 0
+      return `
+        <div class="progress-item">
+          <div class="progress-label">${label}</div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill ${fillClass}" style="width:${pct}%"></div>
+          </div>
+          <div class="progress-pct">${pct}%</div>
+        </div>`
+    }
+
+    function getBadgeEmoji(type) {
+      const map = {
+        'Super Hemat!': '🏆', 'Raja Tabungan!': '🐷',
+        'Si Dermawan!': '💛', 'Anak Bijak!': '😊', 'Mau Belajar!': '💪',
+      }
+      return map[type] || '🏅'
+    }
+
+    // ── NO CHILD ───────────────────────────────────────────────────────────
+    function renderNoChild(profile) {
+      const code = 'KOIN-' + profile.name.toUpperCase().replace(/\s/g,'').slice(0,6)
+      document.getElementById('mainContent').innerHTML = `
+        <div class="no-child-card">
+          <span class="big">👨‍👩‍👧</span>
+          <h3>Belum ada anak yang terhubung</h3>
+          <p>Bagikan kode unik ini ke anak kamu agar akun mereka terhubung ke dashboard ini.</p>
+          <div class="code-display">${code}</div>
+          <button class="btn-copy" onclick="copyCode('${code}')">
+            📋 Salin Kode
+          </button>
+          <p style="margin-top:12px;font-size:11px;color:#CCC">
+            Anak perlu memasukkan kode ini saat mendaftar di halaman login.
+          </p>
+        </div>`
+    }
+
+    // ── DEMO MODE ──────────────────────────────────────────────────────────
+    function renderDemoMode() {
+      document.getElementById('parentName').textContent = 'Demo'
+      document.getElementById('mainContent').innerHTML = `
+        <div class="no-child-card">
+          <span class="big">🔐</span>
+          <h3>Login untuk akses dashboard</h3>
+          <p>Dashboard orang tua memerlukan akun. Daftar sekarang untuk memantau perkembangan finansial anak kamu!</p>
+          <br>
+          <button class="btn-copy" onclick="window.location.href='login.html'"
+                  style="width:100%;padding:12px;font-size:14px">
+            Login / Daftar Sekarang
+          </button>
+          <br><br>
+          <button onclick="window.location.href='index.html'"
+                  style="background:none;border:none;color:#999;font-size:12px;cursor:pointer">
+            Kembali ke KOIN
+          </button>
+        </div>`
+    }
+
+    // ── SWITCH CHILD ───────────────────────────────────────────────────────
+    window.switchChild = function(childId) {
+      currentChild = children.find(c => c.id === childId)
+      renderDashboard()
+    }
+
+    // ── COPY CODE ──────────────────────────────────────────────────────────
+    window.copyCode = function(code) {
+      navigator.clipboard.writeText(code)
+      alert('Kode sudah disalin! Bagikan ke anak kamu via WhatsApp 😊')
+    }
+
+    // ── SEND MESSAGE ───────────────────────────────────────────────────────
+    window.sendMessage = function() {
+    const msg = document.getElementById('msgInput')?.value.trim()
+    if (!msg) return
+
+    // Format pesan
+    const fullMsg = 
+        `🪙 *Pesan dari KOIN*\n\n` +
+        `Hei *${currentChild.name}*! 👋\n\n` +
+        `💬 ${msg}\n\n` +
+        `_Dikirim melalui KOIN — Kenali, Olah, Ingat, Nabung_ 🪙`
+
+    // Buka WhatsApp
+    const encoded = encodeURIComponent(fullMsg)
+    window.open(`https://wa.me/?text=${encoded}`, '_blank')
+
+    // Reset input
+    if (document.getElementById('msgInput')) {
+        document.getElementById('msgInput').value = ''
+    }
+    }
+
+    // ── LOGOUT ─────────────────────────────────────────────────────────────
+    window.logout = async function() {
+      await supabase.auth.signOut()
+      sessionStorage.clear()
+      window.location.href = 'login.html'
+    }
+
+    // ── START ──────────────────────────────────────────────────────────────
+    init()
+  </script>
+
+</body>
+</html>

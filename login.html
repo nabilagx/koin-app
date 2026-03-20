@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KOIN — Login</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #FEF9E7 0%, #FFF3CC 50%, #FDEBD0 100%);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    /* ── LOGO ── */
+    .logo-wrap {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .logo {
+      font-size: 42px;
+      font-weight: 900;
+      color: #F39C12;
+      letter-spacing: 4px;
+      text-shadow: 3px 3px 0px #E67E22;
+    }
+
+    .logo-sub {
+      font-size: 12px;
+      color: #7D6608;
+      font-weight: 600;
+      letter-spacing: 2px;
+      margin-top: 2px;
+    }
+
+    .coin-icon {
+      font-size: 36px;
+      display: block;
+      margin: 8px auto;
+    }
+
+    /* ── CARD ── */
+    .card {
+      background: white;
+      border-radius: 24px;
+      padding: 28px 24px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 8px 40px rgba(243,156,18,0.15);
+      border: 2px solid #F9E79F;
+    }
+
+    /* ── TABS ── */
+    .tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      margin-bottom: 24px;
+      background: #F9F9F9;
+      border-radius: 14px;
+      padding: 4px;
+    }
+
+    .tab {
+      padding: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      background: transparent;
+      color: #999;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: white;
+      color: #1A5276;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+
+    /* ── ROLE SELECTOR ── */
+    .role-wrap {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+
+    .role-card {
+      border: 2px solid #EEE;
+      border-radius: 14px;
+      padding: 14px 10px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .role-card:hover { border-color: #F9E79F; }
+
+    .role-card.selected {
+      border-color: #F39C12;
+      background: linear-gradient(135deg, #FEF9E7, #FFF3CC);
+    }
+
+    .role-emoji { font-size: 28px; display: block; margin-bottom: 6px; }
+    .role-name  { font-size: 13px; font-weight: 700; color: #1A5276; }
+    .role-desc  { font-size: 10px; color: #999; margin-top: 2px; }
+
+    /* ── FORM ── */
+    .form-group { margin-bottom: 14px; }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 700;
+      color: #666;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid #F0F0F0;
+      border-radius: 12px;
+      font-size: 14px;
+      color: #333;
+      outline: none;
+      transition: border-color 0.2s;
+      background: #FAFAFA;
+    }
+
+    .form-input:focus {
+      border-color: #F39C12;
+      background: white;
+    }
+
+    .form-input.error { border-color: #E74C3C; }
+
+    /* ── PARENT CODE ── */
+    .parent-code-wrap {
+      display: none;
+    }
+
+    .parent-code-wrap.show { display: block; }
+
+    .parent-code-info {
+      background: #EBF5FB;
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 11px;
+      color: #1A5276;
+      margin-bottom: 14px;
+      line-height: 1.5;
+    }
+
+    /* ── ERROR & SUCCESS ── */
+    .alert {
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 12px;
+      margin-bottom: 14px;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .alert.show { display: block; }
+    .alert.error   { background: #FADBD8; color: #922B21; border: 1px solid #F1948A; }
+    .alert.success { background: #D5F5E3; color: #1E8449; border: 1px solid #7DCEA0; }
+
+    /* ── TOMBOL ── */
+    .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #F39C12, #E67E22);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(243,156,18,0.3);
+      transition: all 0.2s;
+      margin-top: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-submit:hover   { transform: translateY(-2px); }
+    .btn-submit:active  { transform: translateY(0); }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    /* ── LOADING SPINNER ── */
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      display: none;
+    }
+
+    .spinner.show { display: block; }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── DIVIDER ── */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 16px 0;
+      color: #CCC;
+      font-size: 12px;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #EEE;
+    }
+
+    /* ── SKIP BUTTON ── */
+    .btn-skip {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      color: #999;
+      border: 2px solid #EEE;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-skip:hover { border-color: #CCC; color: #666; }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      margin-top: 20px;
+      font-size: 11px;
+      color: #BDC3C7;
+    }
+
+    /* ── SUKSES STATE ── */
+    .success-state {
+      text-align: center;
+      padding: 20px;
+      display: none;
+    }
+
+    .success-state.show { display: block; }
+    .success-state .big { font-size: 60px; display: block; margin-bottom: 12px; }
+    .success-state h3   { font-size: 18px; color: #1A5276; margin-bottom: 6px; }
+    .success-state p    { font-size: 13px; color: #999; margin-bottom: 20px; }
+
+    /* ── PASSWORD TOGGLE ── */
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-wrap .form-input { padding-right: 42px; }
+
+    .btn-eye {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 16px;
+      color: #CCC;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- LOGO -->
+  <div class="logo-wrap">
+    <div class="logo">🪙 KOIN</div>
+    <div class="logo-sub">KENALI · OLAH · INGAT · NABUNG</div>
+  </div>
+
+  <!-- CARD -->
+  <div class="card">
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" id="tabLogin"    onclick="switchTab('login')">Masuk</button>
+      <button class="tab"        id="tabRegister" onclick="switchTab('register')">Daftar</button>
+    </div>
+
+    <!-- ALERT -->
+    <div class="alert" id="alertBox"></div>
+
+    <!-- SUCCESS STATE -->
+    <div class="success-state" id="successState">
+      <span class="big">🎉</span>
+      <h3 id="successTitle">Berhasil!</h3>
+      <p id="successDesc">Selamat datang di KOIN!</p>
+      <button class="btn-submit" onclick="redirectAfterLogin()">
+        Mulai Sekarang →
+      </button>
+    </div>
+
+    <!-- ═══ LOGIN FORM ═══ -->
+    <div id="loginForm">
+      <div class="form-group">
+        <label class="form-label">📧 Email</label>
+        <input class="form-input" id="loginEmail" type="email" placeholder="email@kamu.com"/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🔒 Password</label>
+        <div class="input-wrap">
+          <input class="form-input" id="loginPassword" type="password" placeholder="••••••••"/>
+          <button class="btn-eye" onclick="togglePwd('loginPassword', this)">👁️</button>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btnLogin" onclick="doLogin()">
+        <span class="spinner" id="spinLogin"></span>
+        Masuk ke KOIN
+      </button>
+
+      <div class="divider">atau</div>
+
+      <button class="btn-skip" onclick="skipLogin()">
+        Lanjut tanpa login (mode demo)
+      </button>
+    </div>
+
+    <!-- ═══ REGISTER FORM ═══ -->
+    <div id="registerForm" style="display:none">
+
+      <!-- ROLE SELECTOR -->
+      <div style="font-size:11px;font-weight:700;color:#666;margin-bottom:10px">
+        Saya adalah...
+      </div>
+      <div class="role-wrap">
+        <div class="role-card selected" id="roleParent" onclick="selectRole('parent')">
+          <span class="role-emoji">👨‍👩‍👧</span>
+          <div class="role-name">Orang Tua</div>
+          <div class="role-desc">Pantau anak saya</div>
+        </div>
+        <div class="role-card" id="roleChild" onclick="selectRole('child')">
+          <span class="role-emoji">👦</span>
+          <div class="role-name">Anak</div>
+          <div class="role-desc">Belajar kelola uang</div>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">👤 Nama Lengkap</label>
+        <input class="form-input" id="regName" type="text" placeholder="Nama kamu..."/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">📧 Email</label>
+        <input class="form-input" id="regEmail" type="email" placeholder="email@kamu.com"/>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">🔒 Password</label>
+        <div class="input-wrap">
+          <input class="form-input" id="regPassword" type="password" placeholder="Min. 6 karakter"/>
+          <button class="btn-eye" onclick="togglePwd('regPassword', this)">👁️</button>
+        </div>
+      </div>
+
+      <!-- Kode Orang Tua (hanya untuk anak) -->
+      <div class="parent-code-wrap" id="parentCodeWrap">
+        <div class="parent-code-info">
+          💡 Minta kode unik dari orang tuamu agar akunmu terhubung ke dashboard mereka.
+        </div>
+        <div class="form-group">
+          <label class="form-label">🔗 Kode Orang Tua (opsional)</label>
+          <input class="form-input" id="parentCode" type="text"
+                 placeholder="Contoh: KOIN-ABC123" style="text-transform:uppercase"/>
+        </div>
+      </div>
+
+      <button class="btn-submit" id="btnRegister" onclick="doRegister()">
+        <span class="spinner" id="spinRegister"></span>
+        Daftar Sekarang
+      </button>
+
+      <div class="divider">atau</div>
+
+      <button class="btn-skip" onclick="skipLogin()">
+        Lanjut tanpa daftar (mode demo)
+      </button>
+    </div>
+
+  </div>
+
+  <div class="footer">🪙 KOIN — Universitas Jember 2026</div>
+
+  <script type="module">
+    import { supabase } from './supabase.js'
+
+    let selectedRole = 'parent'
+
+    // ── TAB SWITCH ─────────────────────────────────────────────────────────
+    window.switchTab = function(tab) {
+      document.getElementById('loginForm').style.display    = tab === 'login'    ? 'block' : 'none'
+      document.getElementById('registerForm').style.display = tab === 'register' ? 'block' : 'none'
+      document.getElementById('tabLogin').classList.toggle('active',    tab === 'login')
+      document.getElementById('tabRegister').classList.toggle('active', tab === 'register')
+      hideAlert()
+    }
+
+    // ── ROLE ───────────────────────────────────────────────────────────────
+    window.selectRole = function(role) {
+      selectedRole = role
+      document.getElementById('roleParent').classList.toggle('selected', role === 'parent')
+      document.getElementById('roleChild').classList.toggle('selected',  role === 'child')
+      document.getElementById('parentCodeWrap').classList.toggle('show', role === 'child')
+    }
+
+    // ── PASSWORD TOGGLE ────────────────────────────────────────────────────
+    window.togglePwd = function(id, btn) {
+      const input = document.getElementById(id)
+      if (input.type === 'password') {
+        input.type = 'text'
+        btn.textContent = '🙈'
+      } else {
+        input.type = 'password'
+        btn.textContent = '👁️'
+      }
+    }
+
+    // ── ALERT ──────────────────────────────────────────────────────────────
+    function showAlert(msg, type = 'error') {
+      const el = document.getElementById('alertBox')
+      el.textContent = msg
+      el.className   = `alert ${type} show`
+    }
+
+    function hideAlert() {
+      document.getElementById('alertBox').classList.remove('show')
+    }
+
+    function setLoading(btnId, spinId, loading) {
+      document.getElementById(btnId).disabled = loading
+      document.getElementById(spinId).classList.toggle('show', loading)
+    }
+
+    // ── LOGIN ──────────────────────────────────────────────────────────────
+    window.doLogin = async function() {
+      const email    = document.getElementById('loginEmail').value.trim()
+      const password = document.getElementById('loginPassword').value
+
+      if (!email || !password) {
+        showAlert('Email dan password harus diisi!')
+        return
+      }
+
+      setLoading('btnLogin', 'spinLogin', true)
+      hideAlert()
+
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+
+      setLoading('btnLogin', 'spinLogin', false)
+
+      if (error) {
+        showAlert('Email atau password salah. Coba lagi!')
+        return
+      }
+
+      // Ambil profil
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single()
+
+      sessionStorage.setItem('userRole', profile?.role || 'child')
+      sessionStorage.setItem('userName', profile?.name || 'Kamu')
+
+      showSuccessState(profile?.name || 'Kamu', profile?.role || 'child')
+    }
+
+    // ── REGISTER ───────────────────────────────────────────────────────────
+    window.doRegister = async function() {
+      const name     = document.getElementById('regName').value.trim()
+      const email    = document.getElementById('regEmail').value.trim()
+      const password = document.getElementById('regPassword').value
+
+      if (!name || !email || !password) {
+        showAlert('Semua kolom harus diisi!')
+        return
+      }
+
+      if (password.length < 6) {
+        showAlert('Password minimal 6 karakter!')
+        return
+      }
+
+      setLoading('btnRegister', 'spinRegister', true)
+      hideAlert()
+
+      // Daftar ke Supabase Auth
+      const { data, error } = await supabase.auth.signUp({ email, password })
+
+      if (error) {
+        setLoading('btnRegister', 'spinRegister', false)
+        showAlert('Gagal daftar: ' + error.message)
+        return
+      }
+
+      // Buat profil
+      const profileData = {
+        id:   data.user.id,
+        role: selectedRole,
+        name,
+      }
+
+      // Cek kode orang tua kalau anak
+      if (selectedRole === 'child') {
+        const code = document.getElementById('parentCode').value.trim().toUpperCase()
+        if (code) {
+          // Cari parent dengan kode tersebut
+          const { data: parentProfile } = await supabase
+            .from('profiles')
+            .select('id')
+            .eq('role', 'parent')
+            .ilike('name', code.replace('KOIN-', ''))
+            .single()
+
+          if (parentProfile) {
+            profileData.parent_id = parentProfile.id
+          }
+        }
+      }
+
+      await supabase.from('profiles').insert(profileData)
+
+      setLoading('btnRegister', 'spinRegister', false)
+
+      sessionStorage.setItem('userRole', selectedRole)
+      sessionStorage.setItem('userName', name)
+
+      showSuccessState(name, selectedRole)
+    }
+
+    // ── SUCCESS STATE ──────────────────────────────────────────────────────
+    function showSuccessState(name, role) {
+      document.getElementById('loginForm').style.display    = 'none'
+      document.getElementById('registerForm').style.display = 'none'
+      document.getElementById('alertBox').classList.remove('show')
+
+      const isParent = role === 'parent'
+
+      document.getElementById('successTitle').textContent =
+        `Halo, ${name}! 👋`
+      document.getElementById('successDesc').textContent =
+        isParent
+          ? 'Selamat datang! Pantau perkembangan anak dari dashboard.'
+          : 'Selamat datang! Yuk mulai belajar kelola uang bersama KOIN!'
+
+      document.getElementById('successState').classList.add('show')
+    }
+
+    // ── REDIRECT ───────────────────────────────────────────────────────────
+    window.redirectAfterLogin = function() {
+      const role = sessionStorage.getItem('userRole')
+      if (role === 'parent') {
+        window.location.href = 'dashboard.html'
+      } else {
+        window.location.href = 'index.html'
+      }
+    }
+
+    // ── SKIP ───────────────────────────────────────────────────────────────
+    window.skipLogin = function() {
+      sessionStorage.setItem('userRole', 'guest')
+      sessionStorage.setItem('userName', 'Tamu')
+      window.location.href = 'index.html'
+    }
+
+    // ── CEK SUDAH LOGIN ────────────────────────────────────────────────────
+    async function checkSession() {
+      const { data: { session } } = await supabase.auth.getSession()
+      if (session) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single()
+
+        if (profile) {
+          sessionStorage.setItem('userRole', profile.role)
+          sessionStorage.setItem('userName', profile.name)
+          redirectAfterLogin()
+        }
+      }
+    }
+
+    checkSession()
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KOIN — Kenali, Olah, Ingat, Nabung</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #FEF9E7 0%, #FFF3CC 50%, #FDEBD0 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      text-align: center;
+      padding: 30px 20px 10px;
+    }
+
+    .logo {
+      font-size: 48px;
+      font-weight: 900;
+      color: #F39C12;
+      letter-spacing: 4px;
+      text-shadow: 3px 3px 0px #E67E22;
+    }
+
+    .logo span {
+      display: inline-block;
+      animation: bounce 1s infinite alternate;
+    }
+    .logo span:nth-child(2) { animation-delay: 0.1s; }
+    .logo span:nth-child(3) { animation-delay: 0.2s; }
+    .logo span:nth-child(4) { animation-delay: 0.3s; }
+
+    @keyframes bounce {
+      from { transform: translateY(0); }
+      to   { transform: translateY(-6px); }
+    }
+
+    .tagline {
+      font-size: 14px;
+      color: #7D6608;
+      font-weight: 600;
+      letter-spacing: 2px;
+      margin-top: 4px;
+    }
+
+    .coin-emoji {
+      font-size: 40px;
+      display: block;
+      margin: 10px auto;
+      animation: spin 3s linear infinite;
+    }
+
+    @keyframes spin {
+      0%   { transform: rotateY(0deg); }
+      50%  { transform: rotateY(90deg); }
+      100% { transform: rotateY(0deg); }
+    }
+
+    /* ── INTRO CARD ── */
+    .intro-card {
+      background: white;
+      border-radius: 20px;
+      padding: 20px 24px;
+      max-width: 420px;
+      margin: 20px auto;
+      box-shadow: 0 4px 20px rgba(243,156,18,0.15);
+      border: 2px solid #F9E79F;
+      text-align: center;
+    }
+
+    .intro-card h2 {
+      font-size: 18px;
+      color: #1A5276;
+      margin-bottom: 8px;
+    }
+
+    .intro-card p {
+      font-size: 13px;
+      color: #666;
+      line-height: 1.6;
+    }
+
+    .intro-card .highlight {
+      color: #E67E22;
+      font-weight: 700;
+    }
+
+    /* ── INPUT UANG JAJAN ── */
+    .allowance-section {
+      max-width: 420px;
+      margin: 0 auto 24px;
+      text-align: center;
+    }
+
+    .allowance-section label {
+      display: block;
+      font-size: 14px;
+      font-weight: 700;
+      color: #1A5276;
+      margin-bottom: 8px;
+    }
+
+    .allowance-input-wrap {
+      display: flex;
+      align-items: center;
+      background: white;
+      border: 2px solid #F39C12;
+      border-radius: 14px;
+      padding: 10px 16px;
+      box-shadow: 0 2px 10px rgba(243,156,18,0.1);
+    }
+
+    .allowance-input-wrap span {
+      font-size: 16px;
+      font-weight: 700;
+      color: #F39C12;
+      margin-right: 8px;
+    }
+
+    .allowance-input-wrap input {
+      border: none;
+      outline: none;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1A5276;
+      width: 100%;
+      background: transparent;
+    }
+
+    /* ── SECTION TITLE ── */
+    .section-title {
+      text-align: center;
+      font-size: 16px;
+      font-weight: 700;
+      color: #1A5276;
+      margin: 0 auto 16px;
+      max-width: 420px;
+    }
+
+    .section-title span {
+      font-size: 12px;
+      font-weight: 400;
+      color: #999;
+      display: block;
+      margin-top: 2px;
+    }
+
+    /* ── PROFESSION CARDS ── */
+    .cards-container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .prof-card {
+      background: white;
+      border-radius: 18px;
+      padding: 20px 16px;
+      text-align: center;
+      cursor: pointer;
+      border: 3px solid transparent;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+      transition: all 0.25s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .prof-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #F39C12, #E67E22);
+      opacity: 0;
+      transition: opacity 0.25s;
+    }
+
+    .prof-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(243,156,18,0.2);
+      border-color: #F9E79F;
+    }
+
+    .prof-card:hover::before { opacity: 1; }
+
+    .prof-card.selected {
+      border-color: #F39C12;
+      background: linear-gradient(135deg, #FEF9E7, #FFF3CC);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 25px rgba(243,156,18,0.3);
+    }
+
+    .prof-card.selected::before { opacity: 1; }
+
+    .prof-card .emoji {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .prof-card .prof-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1A5276;
+      margin-bottom: 4px;
+    }
+
+    .prof-card .prof-income {
+      font-size: 12px;
+      color: #E67E22;
+      font-weight: 600;
+    }
+
+    .prof-card .prof-desc {
+      font-size: 11px;
+      color: #999;
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    .prof-card .check {
+      position: absolute;
+      top: 10px; right: 10px;
+      width: 22px; height: 22px;
+      background: #F39C12;
+      border-radius: 50%;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: white;
+    }
+
+    .prof-card.selected .check { display: flex; }
+
+    /* ── LOADING ── */
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #F39C12;
+      font-size: 14px;
+    }
+
+    .loading .spinner {
+      font-size: 32px;
+      animation: spin2 1s linear infinite;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    @keyframes spin2 {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    /* ── TOMBOL LANJUT ── */
+    .btn-wrap {
+      max-width: 420px;
+      margin: 24px auto 0;
+    }
+
+    .btn-lanjut {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #F39C12, #E67E22);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      letter-spacing: 1px;
+      box-shadow: 0 4px 15px rgba(243,156,18,0.4);
+      transition: all 0.2s;
+      opacity: 0.4;
+      pointer-events: none;
+    }
+
+    .btn-lanjut.active {
+      opacity: 1;
+      pointer-events: all;
+    }
+
+    .btn-lanjut.active:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(243,156,18,0.5);
+    }
+
+    .btn-lanjut.active:active {
+      transform: translateY(0);
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 11px;
+      color: #BDC3C7;
+    }
+
+    /* ── PROFESI EMOJI MAP ── */
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">
+      <span>K</span><span>O</span><span>I</span><span>N</span>
+    </div>
+    <div class="tagline">Kenali · Olah · Ingat · Nabung</div>
+    <span class="coin-emoji">🪙</span>
+  </div>
+
+  <!-- INTRO -->
+  <div class="intro-card">
+    <h2>Hei, Anak Hebat! 👋</h2>
+    <p>
+      Tahukah kamu, uang jajanmu itu berasal dari
+      <span class="highlight">kerja keras Ayah & Ibu</span> setiap hari?
+      <br><br>
+      Yuk, kita belajar menghargai uang dengan cara yang seru! 🎉
+    </p>
+  </div>
+
+  <!-- INPUT UANG JAJAN -->
+  <div class="allowance-section">
+    <label>💰 Berapa uang jajanmu hari ini?</label>
+    <div class="allowance-input-wrap">
+      <span>Rp</span>
+      <input
+        type="number"
+        id="allowanceInput"
+        placeholder="10000"
+        min="1000"
+        max="500000"
+        oninput="checkReady()"
+      />
+    </div>
+  </div>
+
+  <!-- PILIH PROFESI -->
+  <div class="section-title">
+    Pilih profesi Ayah / Ibu kamu
+    <span>Klik salah satu di bawah ini 👇</span>
+  </div>
+
+  <div class="cards-container" id="cardsContainer">
+    <div class="loading">
+      <span class="spinner">⏳</span>
+      Memuat profesi...
+    </div>
+  </div>
+
+  <!-- TOMBOL LANJUT -->
+  <div class="btn-wrap">
+    <button class="btn-lanjut" id="btnLanjut" onclick="lanjut()">
+      Lihat Ayah/Ibu Bekerja →
+    </button>
+  </div>
+
+  <div class="footer">
+    🪙 KOIN — Universitas Jember 2026
+  </div>
+
+  <!-- SCRIPT -->
+  <script type="module" src="./navbar.js">
+    import { supabase } from './supabase.js'
+
+    // Emoji map per profesi
+    const emojiMap = {
+      'Petani':           '👨‍🌾',
+      'Buruh Bangunan':   '👷',
+      'Pedagang Warung':  '🧑‍🍳',
+      'Nelayan':          '🎣',
+    }
+
+    let selectedProfession = null
+
+    // Ambil data profesi dari Supabase
+    async function loadProfessions() {
+      const { data, error } = await supabase
+        .from('professions')
+        .select('*')
+        .order('id')
+
+      const container = document.getElementById('cardsContainer')
+
+      if (error) {
+        container.innerHTML = `<p style="color:red;text-align:center;grid-column:span 2">
+          Gagal memuat data 😢<br>${error.message}
+        </p>`
+        return
+      }
+
+      container.innerHTML = ''
+
+      data.forEach(prof => {
+        const emoji = emojiMap[prof.name] || '👤'
+        const incomeFormatted = new Intl.NumberFormat('id-ID').format(prof.daily_income)
+
+        const card = document.createElement('div')
+        card.className = 'prof-card'
+        card.dataset.id = prof.id
+        card.dataset.name = prof.name
+        card.dataset.income = prof.daily_income
+        card.dataset.hours = prof.work_hours
+
+        card.innerHTML = `
+          <div class="check">✓</div>
+          <span class="emoji">${emoji}</span>
+          <div class="prof-name">${prof.name}</div>
+          <div class="prof-income">Rp${incomeFormatted}/hari</div>
+          <div class="prof-desc">${prof.description || ''}</div>
+        `
+
+        card.addEventListener('click', () => selectProfession(card, prof))
+        container.appendChild(card)
+      })
+    }
+
+    function selectProfession(card, prof) {
+      // Hapus selected dari semua card
+      document.querySelectorAll('.prof-card').forEach(c => c.classList.remove('selected'))
+      // Set selected ke card yang diklik
+      card.classList.add('selected')
+      selectedProfession = prof
+      checkReady()
+    }
+
+    window.checkReady = function() {
+      const allowance = document.getElementById('allowanceInput').value
+      const btn = document.getElementById('btnLanjut')
+      if (selectedProfession && allowance && parseInt(allowance) >= 1000) {
+        btn.classList.add('active')
+      } else {
+        btn.classList.remove('active')
+      }
+    }
+
+    window.lanjut = function() {
+      const allowance = document.getElementById('allowanceInput').value
+      if (!selectedProfession || !allowance) return
+
+      // Simpan ke sessionStorage buat halaman berikutnya
+      sessionStorage.setItem('profession', JSON.stringify(selectedProfession))
+      sessionStorage.setItem('allowance', allowance)
+
+      // Pindah ke halaman simulasi
+      window.location.href = 'simulasi.html'
+    }
+
+    // Load saat halaman dibuka
+    loadProfessions()
+  </script>
+
+</body>
+</html>

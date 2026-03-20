@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KOIN — Simulasi Jajan</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #FEF9E7 0%, #FFF3CC 100%);
+      min-height: 100vh;
+      padding: 20px;
+      padding-bottom: 200px;
+    }
+
+    /* ── HEADER ── */
+    .header {
+      display: flex;
+      align-items: center;
+      max-width: 420px;
+      margin: 0 auto 20px;
+      gap: 12px;
+    }
+
+    .back-btn {
+      background: white;
+      border: none;
+      border-radius: 12px;
+      width: 40px; height: 40px;
+      font-size: 18px;
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .header-title { font-size: 16px; font-weight: 700; color: #1A5276; }
+    .header-sub   { font-size: 12px; color: #999; }
+
+    /* ── PROGRESS STEPS ── */
+    .progress-wrap {
+      max-width: 420px;
+      margin: 0 auto 20px;
+    }
+
+    .progress-steps {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .progress-steps::before {
+      content: '';
+      position: absolute;
+      top: 14px; left: 14px; right: 14px;
+      height: 2px;
+      background: #D6EAF8;
+      z-index: 0;
+    }
+
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      z-index: 1;
+    }
+
+    .step-circle {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: #D6EAF8;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 700; color: #999;
+    }
+
+    .step.active .step-circle { background: #F39C12; color: white; }
+    .step.done   .step-circle { background: #1E8449; color: white; }
+    .step-label  { font-size: 9px; color: #999; font-weight: 600; }
+    .step.active .step-label  { color: #F39C12; }
+    .step.done   .step-label  { color: #1E8449; }
+
+    /* ── UANG JAJAN INFO ── */
+    .allowance-card {
+      background: linear-gradient(135deg, #1A5276, #0D2B6B);
+      border-radius: 20px;
+      padding: 16px 20px;
+      max-width: 420px;
+      margin: 0 auto 16px;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .allowance-info { font-size: 12px; color: rgba(255,255,255,0.6); }
+    .allowance-amount {
+      font-size: 22px;
+      font-weight: 900;
+      color: #F9E79F;
+    }
+
+    .work-equiv {
+      font-size: 11px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 2px;
+    }
+
+    /* ── AI COMMENT ── */
+    .ai-comment {
+      background: white;
+      border-radius: 16px;
+      padding: 12px 16px;
+      max-width: 420px;
+      margin: 0 auto 16px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.06);
+      border-left: 4px solid #F39C12;
+      display: none;
+    }
+
+    .ai-comment.show { display: flex; }
+
+    .ai-avatar {
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+
+    .ai-text {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.6;
+    }
+
+    .ai-text strong { color: #E67E22; }
+
+    /* ── KATEGORI TABS ── */
+    .category-tabs {
+      display: flex;
+      gap: 8px;
+      max-width: 420px;
+      margin: 0 auto 16px;
+      overflow-x: auto;
+      padding-bottom: 4px;
+    }
+
+    .category-tabs::-webkit-scrollbar { display: none; }
+
+    .tab {
+      background: white;
+      border: 2px solid #F9E79F;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #999;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s;
+    }
+
+    .tab.active {
+      background: #F39C12;
+      border-color: #F39C12;
+      color: white;
+    }
+
+    /* ── ITEM GRID ── */
+    .items-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .item-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 12px;
+      text-align: center;
+      cursor: pointer;
+      border: 2px solid transparent;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .item-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(243,156,18,0.15);
+      border-color: #F9E79F;
+    }
+
+    .item-card.selected {
+      border-color: #F39C12;
+      background: linear-gradient(135deg, #FEF9E7, #FFF3CC);
+    }
+
+    .item-card.cant-afford {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .item-emoji { font-size: 36px; display: block; margin-bottom: 8px; }
+    .item-name  { font-size: 13px; font-weight: 700; color: #1A5276; margin-bottom: 4px; }
+    .item-price { font-size: 12px; color: #E67E22; font-weight: 600; }
+
+    .item-hours {
+      font-size: 10px;
+      color: #999;
+      margin-top: 3px;
+    }
+
+    .item-qty {
+      position: absolute;
+      top: -8px; right: -8px;
+      background: #F39C12;
+      color: white;
+      border-radius: 50%;
+      width: 22px; height: 22px;
+      font-size: 11px;
+      font-weight: 700;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .item-card.selected .item-qty { display: flex; }
+
+    /* ── BOTTOM SUMMARY ── */
+    .bottom-summary {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: white;
+      border-radius: 24px 24px 0 0;
+      padding: 16px 20px 24px;
+      box-shadow: 0 -4px 30px rgba(0,0,0,0.12);
+      max-width: 420px;
+      margin: 0 auto;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+    }
+
+    .summary-title {
+      font-size: 11px;
+      color: #999;
+      font-weight: 600;
+      margin-bottom: 8px;
+      text-align: center;
+    }
+
+    .summary-bars {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .summary-bar-item {
+      flex: 1;
+      text-align: center;
+    }
+
+    .summary-bar-label {
+      font-size: 10px;
+      color: #999;
+      margin-bottom: 4px;
+    }
+
+    .summary-bar-wrap {
+      background: #EEE;
+      border-radius: 10px;
+      height: 8px;
+      overflow: hidden;
+    }
+
+    .summary-bar-fill {
+      height: 100%;
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+
+    .bar-spent  { background: linear-gradient(90deg, #E74C3C, #C0392B); }
+    .bar-remain { background: linear-gradient(90deg, #27AE60, #1E8449); }
+    .bar-hours  { background: linear-gradient(90deg, #F39C12, #E67E22); }
+
+    .summary-bar-value {
+      font-size: 10px;
+      font-weight: 700;
+      margin-top: 3px;
+    }
+
+    .val-spent  { color: #E74C3C; }
+    .val-remain { color: #27AE60; }
+    .val-hours  { color: #F39C12; }
+
+    /* ── KERJA HOURS WARNING ── */
+    .hours-warning {
+      background: #FADBD8;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 12px;
+      color: #922B21;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    .hours-warning.show { display: block; }
+
+    /* ── TOMBOL REFLEKSI ── */
+    .btn-refleksi {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #F39C12, #E67E22);
+      color: white;
+      border: none;
+      border-radius: 14px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(243,156,18,0.3);
+      transition: all 0.2s;
+    }
+
+    .btn-refleksi:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-refleksi:not(:disabled):hover { transform: translateY(-2px); }
+
+    /* ── SELECTED ITEMS LIST ── */
+    .selected-list {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+      min-height: 24px;
+    }
+
+    .selected-chip {
+      background: #FEF9E7;
+      border: 1px solid #F9E79F;
+      border-radius: 20px;
+      padding: 3px 10px;
+      font-size: 11px;
+      color: #7D6608;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .selected-chip button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      color: #E67E22;
+      padding: 0;
+      line-height: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div class="header">
+    <button class="back-btn" onclick="history.back()">←</button>
+    <div>
+      <div class="header-title">Simulasi Jajan 🛒</div>
+      <div class="header-sub">Pilih apa yang mau kamu beli hari ini</div>
+    </div>
+  </div>
+
+  <!-- PROGRESS STEPS -->
+  <div class="progress-wrap">
+    <div class="progress-steps">
+      <div class="step done">
+        <div class="step-circle">✓</div>
+        <div class="step-label">Profesi</div>
+      </div>
+      <div class="step done">
+        <div class="step-circle">✓</div>
+        <div class="step-label">Simulasi</div>
+      </div>
+      <div class="step active">
+        <div class="step-circle">3</div>
+        <div class="step-label">Jajan</div>
+      </div>
+      <div class="step">
+        <div class="step-circle">4</div>
+        <div class="step-label">Refleksi</div>
+      </div>
+      <div class="step">
+        <div class="step-circle">5</div>
+        <div class="step-label">Celengan</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- UANG JAJAN INFO -->
+  <div class="allowance-card">
+    <div>
+      <div class="allowance-info">💰 Uang Jajan Hari Ini</div>
+      <div class="allowance-amount" id="allowanceDisplay">Rp 0</div>
+      <div class="work-equiv" id="workEquiv">= — jam kerja Ayah/Ibu</div>
+    </div>
+    <div style="text-align:right">
+      <div class="allowance-info">Sisa</div>
+      <div class="allowance-amount" id="remainDisplay" style="color:#7DCEA0">Rp 0</div>
+    </div>
+  </div>
+
+  <!-- AI COMMENT -->
+  <div class="ai-comment" id="aiComment">
+    <div class="ai-avatar">🤖</div>
+    <div class="ai-text" id="aiText">...</div>
+  </div>
+
+  <!-- KATEGORI TABS -->
+  <div class="category-tabs" id="categoryTabs"></div>
+
+  <!-- ITEMS GRID -->
+  <div class="items-grid" id="itemsGrid"></div>
+
+  <!-- BOTTOM SUMMARY -->
+  <div class="bottom-summary">
+    <div class="summary-title">RINGKASAN BELANJA HARI INI</div>
+
+    <div class="selected-list" id="selectedList">
+      <span style="font-size:11px;color:#CCC">Belum pilih apapun...</span>
+    </div>
+
+    <div class="hours-warning" id="hoursWarning">⚠️ <span id="hoursWarnText"></span></div>
+
+    <div class="summary-bars">
+      <div class="summary-bar-item">
+        <div class="summary-bar-label">Dibelanjakan</div>
+        <div class="summary-bar-wrap">
+          <div class="summary-bar-fill bar-spent" id="barSpent" style="width:0%"></div>
+        </div>
+        <div class="summary-bar-value val-spent" id="valSpent">Rp 0</div>
+      </div>
+      <div class="summary-bar-item">
+        <div class="summary-bar-label">Sisa</div>
+        <div class="summary-bar-wrap">
+          <div class="summary-bar-fill bar-remain" id="barRemain" style="width:100%"></div>
+        </div>
+        <div class="summary-bar-value val-remain" id="valRemain">Rp 0</div>
+      </div>
+      <div class="summary-bar-item">
+        <div class="summary-bar-label">Jam Kerja</div>
+        <div class="summary-bar-wrap">
+          <div class="summary-bar-fill bar-hours" id="barHours" style="width:0%"></div>
+        </div>
+        <div class="summary-bar-value val-hours" id="valHours">0 jam</div>
+      </div>
+    </div>
+
+    <button class="btn-refleksi" id="btnRefleksi" onclick="goToRefleksi()" disabled>
+      Lihat Refleksi 💡
+    </button>
+  </div>
+
+  <script type="module" src="./navbar.js">
+    // ── DATA ───────────────────────────────────────────────────────────────
+    const profession = JSON.parse(sessionStorage.getItem('profession'))
+    const allowance  = parseInt(sessionStorage.getItem('allowance'))
+    if (!profession || !allowance) window.location.href = 'index.html'
+
+    const perHour = profession.daily_income / profession.work_hours
+
+    // ── KATALOG JAJAN ──────────────────────────────────────────────────────
+    const catalog = {
+      '🍔 Makanan': [
+        { id: 1, emoji: '🍱', name: 'Nasi Bungkus', price: 8000 },
+        { id: 2, emoji: '🍜', name: 'Mie Ayam', price: 10000 },
+        { id: 3, emoji: '🥙', name: 'Cilok', price: 3000 },
+        { id: 4, emoji: '🍗', name: 'Gorengan', price: 2000 },
+        { id: 5, emoji: '🍚', name: 'Nasi Goreng', price: 12000 },
+        { id: 6, emoji: '🥘', name: 'Bubur Ayam', price: 9000 },
+      ],
+      '🥤 Minuman': [
+        { id: 7,  emoji: '🧃', name: 'Es Teh',    price: 3000 },
+        { id: 8,  emoji: '🥤', name: 'Es Jeruk',  price: 4000 },
+        { id: 9,  emoji: '🧋', name: 'Boba',      price: 15000 },
+        { id: 10, emoji: '🍵', name: 'Susu Kotak', price: 5000 },
+        { id: 11, emoji: '🍦', name: 'Es Krim',   price: 8000 },
+        { id: 12, emoji: '🍹', name: 'Jus Buah',  price: 7000 },
+      ],
+      '🎮 Mainan': [
+        { id: 13, emoji: '🎮', name: 'Game Online', price: 20000 },
+        { id: 14, emoji: '🃏', name: 'Kartu Lato',  price: 5000 },
+        { id: 15, emoji: '🪀', name: 'Yoyo',        price: 10000 },
+        { id: 16, emoji: '✏️', name: 'Alat Tulis',  price: 6000 },
+      ],
+      '🍬 Jajan': [
+        { id: 17, emoji: '🍬', name: 'Permen',       price: 1000 },
+        { id: 18, emoji: '🍫', name: 'Coklat',       price: 5000 },
+        { id: 19, emoji: '🍿', name: 'Popcorn',      price: 4000 },
+        { id: 20, emoji: '🧁', name: 'Donat',        price: 6000 },
+        { id: 21, emoji: '🥨', name: 'Keripik',      price: 3000 },
+        { id: 22, emoji: '🍭', name: 'Lollipop',     price: 2000 },
+      ],
+    }
+
+    // ── STATE ──────────────────────────────────────────────────────────────
+    let cart         = {}  // { itemId: { item, qty } }
+    let totalSpent   = 0
+    let activeTab    = Object.keys(catalog)[0]
+
+    // ── AI COMMENTS ────────────────────────────────────────────────────────
+    const aiComments = {
+      boba: [
+        `Boba Rp15.000 itu <strong>${(15000/perHour).toFixed(1)} jam kerja</strong> Ayah/Ibu lho! Yakin mau beli? 🤔`,
+        `Boba memang enak, tapi <strong>mahal juga</strong>! Pertimbangkan lagi ya. 💭`,
+      ],
+      gameOnline: [
+        `Game online Rp20.000 = <strong>${(20000/perHour).toFixed(1)} jam kerja</strong> Ayah/Ibu. Itu bisa buat makan 2x! 🎮`,
+      ],
+      tooMuch: [
+        `Waduh, belanjaan kamu sudah <strong>banyak banget!</strong> Ingat, masih perlu nabung juga lho. 💡`,
+        `Hati-hati, uang jajanmu hampir habis! <strong>Sisakan untuk kebutuhan lain</strong> ya. 🙏`,
+      ],
+      good: [
+        `Pilihan yang <strong>bijak!</strong> Kamu pandai mengatur uang jajan. 👏`,
+        `Bagus! Kamu <strong>tidak boros</strong> hari ini. Ayah/Ibu pasti bangga! 🌟`,
+      ],
+      default: [
+        `Setiap barang yang kamu pilih = <strong>waktu kerja</strong> Ayah/Ibu. Pilih dengan bijak ya! 💛`,
+      ],
+    }
+
+    function getAIComment(item) {
+      const hours = (item.price / perHour).toFixed(1)
+      if (item.name === 'Boba')        return aiComments.boba[Math.floor(Math.random()*aiComments.boba.length)]
+      if (item.name === 'Game Online') return aiComments.gameOnline[0]
+      if (totalSpent > allowance * 0.7) return aiComments.tooMuch[Math.floor(Math.random()*aiComments.tooMuch.length)]
+      if (item.price <= 5000)          return aiComments.good[Math.floor(Math.random()*aiComments.good.length)]
+      return `<strong>${item.name}</strong> Rp${fmt(item.price)} = <strong>${hours} jam kerja</strong> Ayah/Ibu. 💭`
+    }
+
+    // ── FORMAT ─────────────────────────────────────────────────────────────
+    function fmt(n) { return new Intl.NumberFormat('id-ID').format(n) }
+
+    // ── RENDER TABS ────────────────────────────────────────────────────────
+    function renderTabs() {
+      const tabs = document.getElementById('categoryTabs')
+      tabs.innerHTML = ''
+      Object.keys(catalog).forEach(cat => {
+        const t = document.createElement('div')
+        t.className = 'tab' + (cat === activeTab ? ' active' : '')
+        t.textContent = cat
+        t.onclick = () => { activeTab = cat; renderTabs(); renderItems() }
+        tabs.appendChild(t)
+      })
+    }
+
+    // ── RENDER ITEMS ───────────────────────────────────────────────────────
+    function renderItems() {
+      const grid = document.getElementById('itemsGrid')
+      grid.innerHTML = ''
+      catalog[activeTab].forEach(item => {
+        const inCart     = cart[item.id]
+        const qty        = inCart ? inCart.qty : 0
+        const cantAfford = (totalSpent + item.price) > allowance && !inCart
+        const hours      = (item.price / perHour).toFixed(1)
+
+        const card = document.createElement('div')
+        card.className = 'item-card' +
+          (qty > 0 ? ' selected' : '') +
+          (cantAfford ? ' cant-afford' : '')
+
+        card.innerHTML = `
+          <div class="item-qty">${qty}</div>
+          <span class="item-emoji">${item.emoji}</span>
+          <div class="item-name">${item.name}</div>
+          <div class="item-price">Rp${fmt(item.price)}</div>
+          <div class="item-hours">≈ ${hours} jam kerja</div>
+        `
+
+        if (!cantAfford) {
+          card.onclick = () => addToCart(item)
+        }
+
+        grid.appendChild(card)
+      })
+    }
+
+    // ── CART ───────────────────────────────────────────────────────────────
+    function addToCart(item) {
+      if (totalSpent + item.price > allowance) return
+
+      if (cart[item.id]) {
+        cart[item.id].qty++
+      } else {
+        cart[item.id] = { item, qty: 1 }
+      }
+
+      totalSpent += item.price
+      updateSummary()
+      renderItems()
+      showAIComment(item)
+    }
+
+    function removeFromCart(itemId) {
+      if (!cart[itemId]) return
+      totalSpent -= cart[itemId].item.price * cart[itemId].qty
+      delete cart[itemId]
+      updateSummary()
+      renderItems()
+    }
+
+    // ── AI COMMENT ─────────────────────────────────────────────────────────
+    function showAIComment(item) {
+      const el = document.getElementById('aiComment')
+      document.getElementById('aiText').innerHTML = getAIComment(item)
+      el.classList.add('show')
+      clearTimeout(window._aiTimer)
+      window._aiTimer = setTimeout(() => el.classList.remove('show'), 4000)
+    }
+
+    // ── UPDATE SUMMARY ─────────────────────────────────────────────────────
+    function updateSummary() {
+      const remain   = allowance - totalSpent
+      const spentPct = Math.min((totalSpent / allowance) * 100, 100)
+      const remainPct= Math.max(100 - spentPct, 0)
+      const hoursUsed= totalSpent / perHour
+      const hoursPct = Math.min((hoursUsed / profession.work_hours) * 100, 100)
+
+      document.getElementById('allowanceDisplay').textContent = 'Rp ' + fmt(allowance)
+      document.getElementById('remainDisplay').textContent    = 'Rp ' + fmt(remain)
+      document.getElementById('workEquiv').textContent =
+        `= ${(allowance/perHour).toFixed(1)} jam kerja ${profession.name}`
+
+      document.getElementById('barSpent').style.width   = spentPct  + '%'
+      document.getElementById('barRemain').style.width  = remainPct + '%'
+      document.getElementById('barHours').style.width   = hoursPct  + '%'
+
+      document.getElementById('valSpent').textContent   = 'Rp ' + fmt(totalSpent)
+      document.getElementById('valRemain').textContent  = 'Rp ' + fmt(remain)
+      document.getElementById('valHours').textContent   = hoursUsed.toFixed(1) + ' jam'
+
+      // Warning
+      const warn = document.getElementById('hoursWarning')
+      if (hoursUsed >= 1) {
+        warn.classList.add('show')
+        document.getElementById('hoursWarnText').textContent =
+          `Belanjaanmu = ${hoursUsed.toFixed(1)} jam kerja ${profession.name}!`
+      } else {
+        warn.classList.remove('show')
+      }
+
+      // Selected chips
+      const list = document.getElementById('selectedList')
+      if (Object.keys(cart).length === 0) {
+        list.innerHTML = '<span style="font-size:11px;color:#CCC">Belum pilih apapun...</span>'
+      } else {
+        list.innerHTML = Object.values(cart).map(({ item, qty }) => `
+          <div class="selected-chip">
+            ${item.emoji} ${item.name} ${qty > 1 ? `x${qty}` : ''}
+            <button onclick="removeFromCart(${item.id})">×</button>
+          </div>
+        `).join('')
+      }
+
+      // Enable button kalau ada yang dipilih
+      document.getElementById('btnRefleksi').disabled = Object.keys(cart).length === 0
+    }
+
+    // ── LANJUT ─────────────────────────────────────────────────────────────
+    window.goToRefleksi = function() {
+      const items = Object.values(cart).map(({ item, qty }) => ({
+        ...item, qty, total: item.price * qty
+      }))
+      sessionStorage.setItem('cart', JSON.stringify(items))
+      sessionStorage.setItem('totalSpent', totalSpent)
+      window.location.href = 'refleksi.html'
+    }
+
+    // ── INIT ───────────────────────────────────────────────────────────────
+    renderTabs()
+    renderItems()
+    updateSummary()
+  </script>
+
+</body>
+</html>
