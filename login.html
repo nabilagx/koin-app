@@ -288,8 +288,8 @@
       color: #CCC;
     }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@window.sb/window.sb-js@2"></script>
+  <script src="./window.sb.js"></script>
   <script src="./navbar.js"></script>
 </head>
 <body>
@@ -486,8 +486,7 @@
       }
 
       // Ambil profil
-      const { data: profile } = await supabase
-        .from('profiles')
+      const { data: profile } = await window.sb.from('profiles')
         .select('*')
         .eq('id', data.user.id)
         .single()
@@ -538,8 +537,7 @@
         const code = document.getElementById('parentCode').value.trim().toUpperCase()
         if (code) {
           // Cari parent dengan kode tersebut
-          const { data: parentProfile } = await supabase
-            .from('profiles')
+          const { data: parentProfile } = await window.sb.from('profiles')
             .select('id')
             .eq('role', 'parent')
             .ilike('name', code.replace('KOIN-', ''))
@@ -600,8 +598,7 @@
     async function checkSession() {
       const { data: { session } } = await window.sb.auth.getSession()
       if (session) {
-        const { data: profile } = await supabase
-          .from('profiles')
+        const { data: profile } = await window.sb.from('profiles')
           .select('*')
           .eq('id', session.user.id)
           .single()
