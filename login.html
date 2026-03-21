@@ -288,6 +288,9 @@
       color: #CCC;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase.js"></script>
+  <script src="./navbar.js"></script>
 </head>
 <body>
 
@@ -412,10 +415,8 @@
 
   <div class="footer">🪙 KOIN — Universitas Jember 2026</div>
 
-  <script type="module">
-    import { supabase } from './supabase.js'
-
-    let selectedRole = 'parent'
+  <script>
+  let selectedRole = 'parent'
 
     // ── TAB SWITCH ─────────────────────────────────────────────────────────
     window.switchTab = function(tab) {
@@ -475,7 +476,7 @@
       setLoading('btnLogin', 'spinLogin', true)
       hideAlert()
 
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      const { data, error } = await window.sb.auth.signInWithPassword({ email, password })
 
       setLoading('btnLogin', 'spinLogin', false)
 
@@ -517,7 +518,7 @@
       hideAlert()
 
       // Daftar ke Supabase Auth
-      const { data, error } = await supabase.auth.signUp({ email, password })
+      const { data, error } = await window.sb.auth.signUp({ email, password })
 
       if (error) {
         setLoading('btnRegister', 'spinRegister', false)
@@ -550,7 +551,7 @@
         }
       }
 
-      await supabase.from('profiles').insert(profileData)
+      await window.sb.from('profiles').insert(profileData)
 
       setLoading('btnRegister', 'spinRegister', false)
 
@@ -597,7 +598,7 @@
 
     // ── CEK SUDAH LOGIN ────────────────────────────────────────────────────
     async function checkSession() {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await window.sb.auth.getSession()
       if (session) {
         const { data: profile } = await supabase
           .from('profiles')

@@ -482,6 +482,9 @@
       margin-top: 4px;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase.js"></script>
+  <script src="./navbar.js"></script>
 </head>
 <body>
 
@@ -502,8 +505,11 @@
     <div class="loading-state">⏳ Memuat data...</div>
   </div>
 
-  <script type="module">
-  import { supabase } from './supabase.js'
+  <script>
+  const sb = window.supabase.createClient(
+    'https://brigiuethtxksuieibto.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaWdpdWV0aHR4a3N1aWVpYnRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MzM3MjYsImV4cCI6MjA4OTQwOTcyNn0.WtQMwK6rDnVWd7Adexi-WPESseUwgHJhlnOSRpXaGgM'
+  )
 
     const fmt = n => new Intl.NumberFormat('id-ID').format(n)
 
@@ -513,7 +519,7 @@
 
     // ── INIT ───────────────────────────────────────────────────────────────
     async function init() {
-      const { data: { session } } = await supabase.auth.getSession()
+      const { data: { session } } = await window.sb.auth.getSession()
 
       // Mode demo / guest
       if (!session) {
@@ -860,7 +866,7 @@
 
     // ── LOGOUT ─────────────────────────────────────────────────────────────
     window.logout = async function() {
-      await supabase.auth.signOut()
+      await window.sb.auth.signOut()
       sessionStorage.clear()
       window.location.href = 'login.html'
     }

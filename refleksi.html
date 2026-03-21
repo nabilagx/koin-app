@@ -555,8 +555,13 @@
     </button>
   </div>
 
-  <script type="module" src="./navbar.js">
-    import { supabase } from './supabase.js'
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase.js"></script>
+  <script src="./navbar.js"></script>
+  <script>
+  'https://brigiuethtxksuieibto.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaWdpdWV0aHR4a3N1aWVpYnRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MzM3MjYsImV4cCI6MjA4OTQwOTcyNn0.WtQMwK6rDnVWd7Adexi-WPESseUwgHJhlnOSRpXaGgM'
+  )
 
     // ── DATA ───────────────────────────────────────────────────────────────
     const profession  = JSON.parse(sessionStorage.getItem('profession'))
@@ -706,7 +711,7 @@
 
       // Coba simpan ke Supabase kalau ada user login
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user } } = await window.sb.auth.getUser()
         if (user) {
           // Simpan transactions
           const txData = cart.map(item => ({
@@ -717,11 +722,11 @@
             equivalent_work_hours: parseFloat(((item.price * item.qty) / perHour).toFixed(2)),
           }))
           if (txData.length > 0) {
-            await supabase.from('transactions').insert(txData)
+            await window.sb.from('transactions').insert(txData)
           }
 
           // Update balances
-          await supabase.from('profiles')
+          await window.sb.from('profiles')
             .update({
               spending_balance: s,
               saving_balance:   v,
@@ -731,7 +736,7 @@
 
           // Simpan badge
           const badgeName = document.getElementById('badgeName').textContent
-          await supabase.from('badges').insert({
+          await window.sb.from('badges').insert({
             child_id:   user.id,
             badge_type: badgeName,
           })
