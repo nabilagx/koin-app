@@ -566,26 +566,51 @@
 
     // ── BAGIKAN ────────────────────────────────────────────────────────────
     window.bagikan = function() {
-      const text =
-        `🪙 KOIN — Laporan Belajar Hari Ini\n\n` +
-        `👤 ${profession.name || '—'}\n` +
-        `💰 Uang Jajan: Rp ${fmt(allowance)}\n` +
-        `🛒 Belanja: Rp ${fmt(totalSpent)}\n` +
-        `⏰ = ${(totalSpent/perHour).toFixed(1)} jam kerja\n\n` +
-        `🪣 Celengan:\n` +
-        `  🛒 Spending: Rp ${fmt(celengan.spending||0)}\n` +
-        `  🐷 Saving:   Rp ${fmt(celengan.saving||0)}\n` +
-        `  🤝 Sharing:  Rp ${fmt(celengan.sharing||0)}\n\n` +
-        `🏅 Badge: ${badge}\n\n` +
-        `Belajar di KOIN — kenali.olah.ingat.nabung 🪙`
+    const profName  = profession?.name || '—'
+    const inc       = new Intl.NumberFormat('id-ID').format(profession?.daily_income || 0)
+    const allowFmt  = new Intl.NumberFormat('id-ID').format(allowance)
+    const spentFmt  = new Intl.NumberFormat('id-ID').format(totalSpent)
+    const savFmt    = new Intl.NumberFormat('id-ID').format(celengan.saving   || 0)
+    const shdFmt    = new Intl.NumberFormat('id-ID').format(celengan.sharing  || 0)
+    const spdFmt    = new Intl.NumberFormat('id-ID').format(celengan.spending || 0)
+    const hours     = (totalSpent / (profession?.daily_income / profession?.work_hours || 1)).toFixed(1)
 
-      if (navigator.share) {
-        navigator.share({ title: 'KOIN — Laporan Belajar', text })
-      } else {
-        navigator.clipboard.writeText(text)
-        alert('Teks laporan sudah disalin! Paste ke WhatsApp orang tua ya 😊')
-      }
+    const text =
+  `╔══════════════════════════╗
+    🪙  L A P O R A N  K O I N
+  ╚══════════════════════════╝
+
+  📅 ${new Date().toLocaleDateString('id-ID', {weekday:'long', day:'numeric', month:'long', year:'numeric'})}
+
+  👨‍👩‍👧 *Profesi Dipelajari*
+    ${profName} (Rp${inc}/hari)
+
+  💰 *Keuangan Hari Ini*
+    Uang Jajan  : Rp${allowFmt}
+    Dibelanjakan: Rp${spentFmt}
+    ⏰ = ${hours} jam kerja orang tua
+
+  🪣 *Alokasi Celengan*
+    🛒 Spending : Rp${spdFmt}
+    🐷 Saving   : Rp${savFmt}
+    🤝 Sharing  : Rp${shdFmt}
+
+  🏅 *Badge Hari Ini*
+    ${badge}
+
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━
+  ✨ Belajar bareng KOIN
+    kenali • olah • ingat • nabung
+    koin-app.vercel.app
+  ━━━━━━━━━━━━━━━━━━━━━━━━━━`
+
+    if (navigator.share) {
+      navigator.share({ title: 'Laporan KOIN', text })
+    } else {
+      const encoded = encodeURIComponent(text)
+      window.open(`https://wa.me/?text=${encoded}`, '_blank')
     }
+  }
   </script>
 
 </body>
