@@ -628,9 +628,10 @@
         const { data: { user } } = await window.sb.auth.getUser()
         if (user) {
           await window.sb.from('wishlists').insert({
-            child_id:     user.id,
-            item_name:    name,
+            child_id:      user.id,
+            item_name:     name,
             target_amount: price,
+            is_achieved:   false,
           })
         }
       } catch (e) { console.log('Wishlist DB skip:', e) }
@@ -741,7 +742,74 @@
     }
 
     // ── INIT ───────────────────────────────────────────────────────────────
-    renderWishlist()
+    // Load saving balance dari Supabase kalau login
+    async function loadSavingFromDB() {
+      try {
+        const { data: { user } } = await window.sb.auth.getUser()
+        if (user) {
+          const { data: profile } = await window.sb
+            .from('profiles')
+            .select('saving_balance')
+            .eq('id', user.id)
+            .single()
+          
+          if (profile) {
+            // Override saving dari DB (akumulatif)
+            const dbSaving = profile.saving_balance || 0
+            document.getElementById('savingDisplay').textContent = 'Rp ' + fmt(dbSaving)
+            // Update celengan di session
+            const cel = JSON.parse(sessionStorage.getItem('celengan') || '{}')
+            cel.saving = dbSaving
+            sessionStorage.setItem('celengan', JSON.stringify(cel))
+            return dbSaving
+          }
+        }
+      } catch(e) { console.log('Load saving skip:', e) }
+      return saving
+    }
+
+    // Load wishlist dari Supabase kalau login
+    async function loadWishlistFromDB() {
+      try {
+        const { data: { user } } = await window.sb.auth.getUser()
+        if (user) {
+          const { data: wlData } = await window.sb
+            .from('wishlists')
+            .select('*')
+            .eq('child_id', user.id)
+            .eq('is_achieved', false)
+            .order('created_at', { ascending: false })
+          
+          if (wlData && wlData.length > 0) {
+            const dbSaving = parseInt(document.getElementById('savingDisplay').textContent.replace(/[^0-9]/g, '')) || saving
+            wlData.forEach(wl => {
+              const days = dbSaving > 0 ? Math.ceil(wl.target_amount / dbSaving) : null
+              wishlist.push({
+                id:        wl.id,
+                name:      wl.item_name,
+                price:     wl.target_amount,
+                days,
+                img:       wl.image_url || null,
+                saved:     Math.min(dbSaving, wl.target_amount),
+                achieved:  wl.is_achieved,
+                createdAt: new Date(wl.created_at).toLocaleDateString('id-ID'),
+                dbId:      wl.id,
+              })
+            })
+            renderWishlist()
+          }
+        }
+      } catch(e) { console.log('Load wishlist skip:', e) }
+    }
+
+    // Jalankan
+    async function init() {
+      await loadSavingFromDB()
+      await loadWishlistFromDB()
+      renderWishlist()
+    }
+
+    init()
   </script>
 
 </body>

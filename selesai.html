@@ -439,6 +439,51 @@
     const totalSpent = parseInt(sessionStorage.getItem('totalSpent'))   || 0
     const celengan   = JSON.parse(sessionStorage.getItem('celengan'))   || {}
     const wishlist   = JSON.parse(sessionStorage.getItem('wishlist'))   || []
+    // Load data akumulatif dari Supabase
+    async function loadFromDB() {
+      try {
+        const { data: { user } } = await window.sb.auth.getUser()
+        if (!user) return
+        const fmt = n => new Intl.NumberFormat('id-ID').format(n)
+
+        // Saldo akumulatif
+        const { data: profile } = await window.sb
+          .from('profiles').select('spending_balance,saving_balance,sharing_balance')
+          .eq('id', user.id).single()
+
+        if (profile) {
+          if(document.getElementById('celSpending')) document.getElementById('celSpending').textContent = 'Rp ' + fmt(profile.spending_balance||0)
+          if(document.getElementById('celSaving'))   document.getElementById('celSaving').textContent   = 'Rp ' + fmt(profile.saving_balance||0)
+          if(document.getElementById('celSharing'))  document.getElementById('celSharing').textContent  = 'Rp ' + fmt(profile.sharing_balance||0)
+        }
+
+        // Wishlist dari DB
+        const dbSaving = profile?.saving_balance || 0
+        const { data: wlData } = await window.sb
+          .from('wishlists').select('*')
+          .eq('child_id', user.id).eq('is_achieved', false)
+          .order('created_at', { ascending: false }).limit(3)
+
+        if (wlData && wlData.length > 0) {
+          const preview = document.getElementById('wishlistPreview')
+          const list    = document.getElementById('wishlistPreviewList')
+          if (preview && list) {
+            preview.style.display = 'block'
+            list.innerHTML = wlData.map(wl => {
+              const pct  = Math.min((dbSaving/wl.target_amount)*100,100).toFixed(0)
+              const days = dbSaving > 0 ? Math.ceil(wl.target_amount/dbSaving) : null
+              return `<div class="wishlist-preview-item">
+                <div class="wishlist-preview-name">🎁 ${wl.item_name}
+                  <span style="font-size:11px;color:rgba(255,255,255,0.3)">Rp ${fmt(wl.target_amount)} (${pct}%)</span>
+                </div>
+                <div class="wishlist-preview-days">${pct>=100?'🎉 Tercapai!':days?`⏳ ${days} hari`:'💪 Nabung!'}</div>
+              </div>`
+            }).join('')
+          }
+        }
+      } catch(e) { console.log('DB skip:', e) }
+    }
+    setTimeout(loadFromDB, 500)
 
     const fmt     = n => new Intl.NumberFormat('id-ID').format(n)
     const perHour = profession.daily_income

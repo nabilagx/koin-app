@@ -700,7 +700,7 @@
       const v = parseInt(document.getElementById('inputSaving').value)   || 0
       const b = parseInt(document.getElementById('inputSharing').value)  || 0
 
-      // Simpan ke sessionStorage untuk dashboard
+      // Simpan ke sessionStorage untuk halaman berikutnya
       sessionStorage.setItem('celengan', JSON.stringify({
         spending: s, saving: v, sharing: b
       }))
@@ -709,6 +709,22 @@
       try {
         const { data: { user } } = await window.sb.auth.getUser()
         if (user) {
+          // Ambil saldo LAMA dari database dulu
+          const { data: currentProfile } = await window.sb
+            .from('profiles')
+            .select('spending_balance, saving_balance, sharing_balance')
+            .eq('id', user.id)
+            .single()
+
+          const oldSpending = currentProfile?.spending_balance || 0
+          const oldSaving   = currentProfile?.saving_balance   || 0
+          const oldSharing  = currentProfile?.sharing_balance  || 0
+
+          // AKUMULASI — tambahkan ke saldo lama
+          const newSpending = oldSpending + s
+          const newSaving   = oldSaving   + v
+          const newSharing  = oldSharing  + b
+
           // Simpan transactions
           const txData = cart.map(item => ({
             child_id: user.id,
@@ -721,24 +737,32 @@
             await window.sb.from('transactions').insert(txData)
           }
 
-          // Update balances
+          // Update saldo akumulatif
           await window.sb.from('profiles')
             .update({
-              spending_balance: s,
-              saving_balance:   v,
-              sharing_balance:  b,
+              spending_balance: newSpending,
+              saving_balance:   newSaving,
+              sharing_balance:  newSharing,
             })
             .eq('id', user.id)
 
+          // Simpan ke sessionStorage dengan nilai akumulatif
+          sessionStorage.setItem('celengan', JSON.stringify({
+            spending: newSpending,
+            saving:   newSaving,
+            sharing:  newSharing,
+          }))
+          sessionStorage.setItem('totalSaving', newSaving)
+
           // Simpan badge
-          const badgeName = document.getElementById('badgeName').textContent
+          const badgeName = document.getElementById('badgeName')?.textContent || 'Anak Bijak!'
           await window.sb.from('badges').insert({
             child_id:   user.id,
             badge_type: badgeName,
           })
         }
       } catch (e) {
-        console.log('Simpan ke DB gagal (mungkin belum login):', e)
+        console.log('Simpan ke DB gagal:', e)
       }
 
       window.location.href = 'wishlist.html'
