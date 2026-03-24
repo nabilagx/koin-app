@@ -507,11 +507,6 @@
   </div>
 
   <script>
-  const sb = window.supabase.createClient(
-    'https://brigiuethtxksuieibto.supabase.co',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJyaWdpdWV0aHR4a3N1aWVpYnRvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4MzM3MjYsImV4cCI6MjA4OTQwOTcyNn0.WtQMwK6rDnVWd7Adexi-WPESseUwgHJhlnOSRpXaGgM'
-  )
-
     const fmt = n => new Intl.NumberFormat('id-ID').format(n)
 
     let currentChild = null
@@ -530,25 +525,22 @@
 
       parentUser = session.user
 
-      const { data: profile, error: profileError } = await supabase
+      // FIX: Pakai window.sb, bukan supabase
+      const { data: profile, error: profileError } = await window.sb
         .from('profiles')
         .select('*')
         .eq('id', parentUser.id)
         .single()
 
-        console.log('Profile:', profile)
-        console.log('Profile error:', profileError)
-
       if (!profile || profile.role !== 'parent') {
-        // Bukan parent — redirect ke index
         window.location.href = 'index.html'
         return
       }
 
       document.getElementById('parentName').textContent = profile.name
 
-      // Ambil daftar anak
-      const { data: childList } = await supabase
+      // FIX: Pakai window.sb
+      const { data: childList } = await window.sb
         .from('profiles')
         .select('*')
         .eq('parent_id', parentUser.id)
@@ -568,21 +560,23 @@
     async function renderDashboard() {
       const content = document.getElementById('mainContent')
 
-      // Ambil data anak
-      const { data: transactions } = await supabase
+      // FIX: Pakai window.sb
+      const { data: transactions } = await window.sb
         .from('transactions')
         .select('*')
         .eq('child_id', currentChild.id)
         .order('created_at', { ascending: false })
         .limit(20)
 
-      const { data: wishlists } = await supabase
+      // FIX: Pakai window.sb
+      const { data: wishlists } = await window.sb
         .from('wishlists')
         .select('*')
         .eq('child_id', currentChild.id)
         .order('created_at', { ascending: false })
 
-      const { data: badges } = await supabase
+      // FIX: Pakai window.sb
+      const { data: badges } = await window.sb
         .from('badges')
         .select('*')
         .eq('child_id', currentChild.id)
@@ -602,7 +596,6 @@
 
       content.innerHTML = `
 
-        <!-- CHILD SELECTOR -->
         ${children.length > 1 ? `
         <div class="child-selector">
           <div class="child-selector-label">PILIH ANAK</div>
@@ -615,7 +608,6 @@
           </div>
         </div>` : ''}
 
-        <!-- STATS -->
         <div class="section-label">📊 STATISTIK ${currentChild.name.toUpperCase()}</div>
         <div class="stats-grid">
           <div class="stat-card">
@@ -644,16 +636,10 @@
           </div>
         </div>
 
-        <div class="activity-card" style="margin-bottom: 16px;">
-          <div class="card-title">📈 Grafik Keuangan (7 Hari Terakhir)</div>
-          <canvas id="financeChart" height="200"></canvas>
-        </div>
-
-        <!-- CELENGAN -->
         <div class="celengan-card">
           <div class="card-title">
             🪣 Saldo Celengan
-            <span class="card-badge">Hari Ini</span>
+            <span class="card-badge">Keseluruhan</span>
           </div>
           <div class="celengan-row">
             <div class="celengan-item spending-bg">
@@ -679,7 +665,6 @@
             </div>
           </div>
 
-          <!-- Progress -->
           <div class="progress-wrap">
             ${renderProgressBar('Spending', currentChild.spending_balance||0,
               (currentChild.spending_balance||0)+(currentChild.saving_balance||0)+(currentChild.sharing_balance||0),
@@ -693,7 +678,11 @@
           </div>
         </div>
 
-        <!-- AKTIVITAS TERBARU -->
+        <div class="activity-card" style="margin-bottom: 16px;">
+          <div class="card-title">📈 Grafik Keuangan (7 Hari Terakhir)</div>
+          <canvas id="financeChart" height="200"></canvas>
+        </div>
+
         <div class="activity-card">
           <div class="card-title">
             📋 Aktivitas Terbaru
@@ -723,7 +712,6 @@
               </div>`).join('')}
         </div>
 
-        <!-- WISHLIST -->
         ${wlList.length > 0 ? `
         <div class="wishlist-card">
           <div class="card-title">
@@ -753,7 +741,6 @@
           }).join('')}
         </div>` : ''}
 
-        <!-- BADGES -->
         ${bgList.length > 0 ? `
         <div class="badges-card">
           <div class="card-title">🏅 Badge Didapat</div>
@@ -765,7 +752,6 @@
           </div>
         </div>` : ''}
 
-        <!-- PESAN KE ANAK -->
         <div class="msg-card">
           <div class="msg-label">💬 Kirim Pesan Semangat ke ${currentChild.name}</div>
           <input class="msg-input" id="msgInput"
@@ -774,7 +760,50 @@
           <button class="btn-send-msg" onclick="sendMessage()">Kirim 📤</button>
         </div>
       `
+      
+      // Render grafik setelah elemen HTML terbuat
       setTimeout(() => initChart(txList), 100);
+    }
+
+    // ── CHART.JS GRAFIK HARIAN ─────────────────────────────────────────────
+    function initChart(txList) {
+      if (typeof Chart === 'undefined') return; // Jaga-jaga kalau CDN gagal load
+      const ctx = document.getElementById('financeChart');
+      if (!ctx) return;
+
+      const days = [];
+      const dataSaving = [];
+      const dataJajan = [];
+
+      for(let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0]; 
+        days.push(d.toLocaleDateString('id-ID', { weekday: 'short' })); 
+
+        const txToday = txList.filter(t => t.created_at.startsWith(dateStr));
+        const sumSaving = txToday.filter(t => t.type === 'saving').reduce((s,t) => s + t.amount, 0);
+        const sumJajan = txToday.filter(t => t.type === 'jajan').reduce((s,t) => s + t.amount, 0);
+
+        dataSaving.push(sumSaving);
+        dataJajan.push(sumJajan);
+      }
+
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: days,
+          datasets: [
+            { label: 'Uang Ditabung 🐷', data: dataSaving, backgroundColor: '#2ECC71', borderRadius: 4 },
+            { label: 'Uang Dijajankan 🛒', data: dataJajan, backgroundColor: '#E74C3C', borderRadius: 4 }
+          ]
+        },
+        options: {
+          responsive: true,
+          scales: { y: { beginAtZero: true, ticks: { callback: v => 'Rp'+(v/1000)+'k' } } },
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
+        }
+      });
     }
 
     // ── HELPERS ────────────────────────────────────────────────────────────
@@ -854,18 +883,15 @@
     const msg = document.getElementById('msgInput')?.value.trim()
     if (!msg) return
 
-    // Format pesan
     const fullMsg = 
         `🪙 *Pesan dari KOIN*\n\n` +
         `Hei *${currentChild.name}*! 👋\n\n` +
         `💬 ${msg}\n\n` +
         `_Dikirim melalui KOIN — Kenali, Olah, Ingat, Nabung_ 🪙`
 
-    // Buka WhatsApp
     const encoded = encodeURIComponent(fullMsg)
     window.open(`https://wa.me/?text=${encoded}`, '_blank')
 
-    // Reset input
     if (document.getElementById('msgInput')) {
         document.getElementById('msgInput').value = ''
     }
@@ -880,47 +906,6 @@
 
     // ── START ──────────────────────────────────────────────────────────────
     init()
-    // ── CHART.JS GRAFIK HARIAN ─────────────────────────────────────────────
-    function initChart(txList) {
-      const ctx = document.getElementById('financeChart');
-      if (!ctx) return;
-
-      // Ambil tanggal 7 hari ke belakang
-      const days = [];
-      const dataSaving = [];
-      const dataJajan = [];
-
-      for(let i = 6; i >= 0; i--) {
-        const d = new Date();
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split('T')[0]; // Format YYYY-MM-DD
-        days.push(d.toLocaleDateString('id-ID', { weekday: 'short' })); // ex: Sen, Sel
-
-        // Filter transaksi per hari itu
-        const txToday = txList.filter(t => t.created_at.startsWith(dateStr));
-        const sumSaving = txToday.filter(t => t.type === 'saving').reduce((s,t) => s + t.amount, 0);
-        const sumJajan = txToday.filter(t => t.type === 'jajan').reduce((s,t) => s + t.amount, 0);
-
-        dataSaving.push(sumSaving);
-        dataJajan.push(sumJajan);
-      }
-
-      new Chart(ctx, {
-        type: 'bar',
-        data: {
-          labels: days,
-          datasets: [
-            { label: 'Uang Ditabung 🐷', data: dataSaving, backgroundColor: '#2ECC71', borderRadius: 4 },
-            { label: 'Uang Dijajankan 🛒', data: dataJajan, backgroundColor: '#E74C3C', borderRadius: 4 }
-          ]
-        },
-        options: {
-          responsive: true,
-          scales: { y: { beginAtZero: true, ticks: { callback: v => 'Rp'+(v/1000)+'k' } } },
-          plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 10 } } } }
-        }
-      });
-    }
   </script>
 
 </body>
