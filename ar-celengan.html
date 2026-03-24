@@ -4,7 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KOIN — AR Celengan (Pinch to Drop)</title>
-  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
@@ -390,8 +391,49 @@
       buckets[2].x = newSpacing*3 + newBucketW*2; buckets[2].y = newBucketY; buckets[2].w = newBucketW;
     });
 
-    function simpanDanLanjut() {
+    // ── SIMPAN & LANJUT ────────────────────────────────────────────────────
+    async function simpanDanLanjut() {
+      const btn = document.getElementById('btnSelesai');
+      btn.innerHTML = 'Menyimpan... ⏳';
+      btn.disabled = true;
+
       sessionStorage.setItem('celengan', JSON.stringify({ spending: balances.spending, saving: balances.saving, sharing: balances.sharing }));
+
+      // SIMPAN KE SUPABASE (BIAR BERKALI-KALI MAIN NAMBAH TERUS!)
+      try {
+        const { data: { user } } = await window.sb.auth.getUser();
+        if (user) {
+          const cart = JSON.parse(sessionStorage.getItem('cart')) || [];
+          const profession = JSON.parse(sessionStorage.getItem('profession'));
+          const perHour = profession ? profession.daily_income / profession.work_hours : 1;
+
+          // 1. Ambil saldo lama dan tambahin (Akumulasi)
+          const { data: profile } = await window.sb.from('profiles')
+            .select('spending_balance, saving_balance, sharing_balance').eq('id', user.id).single();
+          
+          const newSp = (profile?.spending_balance || 0) + balances.spending;
+          const newSv = (profile?.saving_balance || 0) + balances.saving;
+          const newSh = (profile?.sharing_balance || 0) + balances.sharing;
+
+          await window.sb.from('profiles').update({
+            spending_balance: newSp, saving_balance: newSv, sharing_balance: newSh
+          }).eq('id', user.id);
+
+          sessionStorage.setItem('totalSaving', newSv); // Update lokal buat wishlist
+
+          // 2. Catat Transaksi ke Sejarah (Jajan + Nabung)
+          const txData = cart.map(item => ({
+            child_id: user.id, type: 'jajan', amount: item.price * item.qty, item_name: item.name,
+            equivalent_work_hours: parseFloat(((item.price * item.qty) / perHour).toFixed(2))
+          }));
+
+          if (balances.saving > 0) txData.push({ child_id: user.id, type: 'saving', amount: balances.saving, item_name: 'Nabung di Celengan' });
+          if (balances.sharing > 0) txData.push({ child_id: user.id, type: 'sharing', amount: balances.sharing, item_name: 'Berbagi / Amal' });
+
+          if (txData.length > 0) await window.sb.from('transactions').insert(txData);
+        }
+      } catch (e) { console.error('Gagal simpan DB', e); }
+
       if (videoElement.srcObject) videoElement.srcObject.getTracks().forEach(track => track.stop());
       window.location.href = 'wishlist.html';
     }

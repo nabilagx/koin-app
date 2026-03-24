@@ -818,7 +818,7 @@
           const newSaving   = oldSaving   + v
           const newSharing  = oldSharing  + b
 
-          // Simpan transactions
+          // Simpan transactions (Jajan + Nabung + Sharing)
           const txData = cart.map(item => ({
             child_id: user.id,
             type: 'jajan',
@@ -826,6 +826,10 @@
             item_name: item.name,
             equivalent_work_hours: parseFloat(((item.price * item.qty) / perHour).toFixed(2)),
           }))
+          
+          if (v > 0) txData.push({ child_id: user.id, type: 'saving', amount: v, item_name: 'Nabung di Celengan' });
+          if (b > 0) txData.push({ child_id: user.id, type: 'sharing', amount: b, item_name: 'Berbagi / Amal' });
+
           if (txData.length > 0) {
             await window.sb.from('transactions').insert(txData)
           }
