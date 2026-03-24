@@ -548,6 +548,14 @@
 
       children = childList || []
 
+      document.getElementById('parentName').textContent = profile.name
+
+      // Bikin Kode Referalnya (KOIN-NAMABAPAK)
+      window.myFamilyCode = 'KOIN-' + profile.name.toUpperCase().replace(/\s/g,'').slice(0,6)
+
+      // FIX: Pakai window.sb
+      const { data: childList } = await window.sb
+
       if (children.length === 0) {
         renderNoChild(profile)
       } else {
@@ -633,6 +641,18 @@
             <div class="stat-label">Badge Didapat</div>
             <div class="stat-value">${bgList.length}</div>
             <div class="stat-sub">pencapaian</div>
+          </div>
+        </div>
+
+        <div class="activity-card" style="margin-bottom: 16px; background: linear-gradient(135deg, #EBF5FB, #D6EAF8); border: 2px dashed #2E86C1;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:11px; color:#1A5276; font-weight:700;">🔗 KODE KELUARGA (Undang Anak)</div>
+              <div style="font-size:18px; font-weight:900; color:#2E86C1; letter-spacing:2px; margin-top:2px;">${window.myFamilyCode}</div>
+            </div>
+            <button onclick="shareMagicLink()" style="background:#2E86C1; color:white; border:none; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; font-size:12px; box-shadow: 0 4px 10px rgba(46,134,193,0.3);">
+              Bagikan Link 📤
+            </button>
           </div>
         </div>
 
@@ -895,6 +915,21 @@
     if (document.getElementById('msgInput')) {
         document.getElementById('msgInput').value = ''
     }
+    }
+
+    // ── MAGIC LINK BROADCAST ───────────────────────────────────────────────
+    window.shareMagicLink = function() {
+      // Link Vercel lu ditambah parameter ?ref=KODENYA
+      const link = `https://koin-app.vercel.app/login.html?ref=${window.myFamilyCode}`
+      
+      const msg = 
+        `🪙 *Undangan dari KOIN*\n\n` +
+        `Halo! Yuk belajar kelola uang jajan dengan seru di aplikasi KOIN.\n\n` +
+        `Klik link di bawah ini buat daftar. Kode Orang Tua akan *otomatis terisi* biar akun kita langsung terhubung! 👇\n\n` +
+        `${link}`
+
+      const encoded = encodeURIComponent(msg)
+      window.open(`https://wa.me/?text=${encoded}`, '_blank')
     }
 
     // ── LOGOUT ─────────────────────────────────────────────────────────────

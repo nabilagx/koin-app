@@ -594,6 +594,21 @@
       window.location.href = 'index.html'
     }
 
+    // ── AUTO FILL DARI MAGIC LINK (REFERRAL) ───────────────────────────────
+    const urlParams = new URLSearchParams(window.location.search)
+    const refCode = urlParams.get('ref')
+    
+    if (refCode) {
+      // 1. Pindah ke tab Daftar
+      switchTab('register')
+      // 2. Pilih role Anak otomatis
+      selectRole('child')
+      // 3. Isi kodenya otomatis!
+      document.getElementById('parentCode').value = refCode
+      // 4. Kasih notif biar anaknya tau
+      showAlert('Kode Orang Tua berhasil dipasang otomatis! 🎉', 'success')
+    }
+
     // ── CEK SUDAH LOGIN ────────────────────────────────────────────────────
     async function checkSession() {
       const { data: { session } } = await window.sb.auth.getSession()
