@@ -4,7 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>KOIN — Dashboard Orang Tua</title>
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -135,10 +137,6 @@
       border-radius: 16px;
       padding: 16px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.04);
-    }
-
-    .stat-card.wide {
-      grid-column: span 2;
     }
 
     .stat-icon { font-size: 22px; margin-bottom: 6px; display: block; }
@@ -276,29 +274,11 @@
 
     .activity-info { flex: 1; }
 
-    .activity-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: #1A5276;
-    }
+    .activity-name { font-size: 13px; font-weight: 600; color: #1A5276; }
+    .activity-time { font-size: 10px; color: #CCC; margin-top: 1px; }
 
-    .activity-time {
-      font-size: 10px;
-      color: #CCC;
-      margin-top: 1px;
-    }
-
-    .activity-amount {
-      font-size: 13px;
-      font-weight: 700;
-      color: #E74C3C;
-    }
-
-    .activity-hours {
-      font-size: 10px;
-      color: #CCC;
-      text-align: right;
-    }
+    .activity-amount { font-size: 13px; font-weight: 700; color: #E74C3C; }
+    .activity-hours  { font-size: 10px; color: #CCC; text-align: right; }
 
     /* ── WISHLIST ── */
     .wishlist-card {
@@ -309,47 +289,20 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.04);
     }
 
-    .wl-item {
-      padding: 10px 0;
-      border-bottom: 1px solid #F8F8F8;
-    }
-
+    .wl-item { padding: 10px 0; border-bottom: 1px solid #F8F8F8; }
     .wl-item:last-child { border-bottom: none; }
 
-    .wl-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 6px;
-    }
-
+    .wl-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
     .wl-name  { font-size: 13px; font-weight: 600; color: #1A5276; }
     .wl-price { font-size: 12px; color: #9B59B6; font-weight: 600; }
 
-    .wl-bar-wrap {
-      background: #F0F0F0;
-      border-radius: 10px;
-      height: 6px;
-      overflow: hidden;
-      margin-bottom: 4px;
-    }
-
+    .wl-bar-wrap { background: #F0F0F0; border-radius: 10px; height: 6px; overflow: hidden; margin-bottom: 4px; }
     .wl-bar-fill {
-      height: 100%;
-      border-radius: 10px;
-      background: linear-gradient(90deg, #9B59B6, #6C3483);
+      height: 100%; border-radius: 10px; background: linear-gradient(90deg, #9B59B6, #6C3483);
       transition: width 0.8s ease;
     }
-
-    .wl-bar-fill.achieved {
-      background: linear-gradient(90deg, #2ECC71, #1E8449);
-    }
-
-    .wl-info {
-      display: flex;
-      justify-content: space-between;
-      font-size: 10px;
-      color: #CCC;
-    }
+    .wl-bar-fill.achieved { background: linear-gradient(90deg, #2ECC71, #1E8449); }
+    .wl-info { display: flex; justify-content: space-between; font-size: 10px; color: #CCC; }
 
     /* ── BADGES ── */
     .badges-card {
@@ -360,136 +313,66 @@
       box-shadow: 0 2px 10px rgba(0,0,0,0.04);
     }
 
-    .badges-row {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
+    .badges-row { display: flex; gap: 8px; flex-wrap: wrap; }
 
     .badge-chip {
-      background: #FEF9E7;
-      border: 1px solid #F9E79F;
-      border-radius: 20px;
-      padding: 6px 12px;
-      font-size: 12px;
-      color: #7D6608;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 4px;
+      background: #FEF9E7; border: 1px solid #F9E79F; border-radius: 20px;
+      padding: 6px 12px; font-size: 12px; color: #7D6608; font-weight: 600;
+      display: flex; align-items: center; gap: 4px;
     }
 
-    /* ── EMPTY STATE ── */
-    .empty-state {
-      text-align: center;
-      padding: 30px 20px;
-      color: #CCC;
-    }
-
+    /* ── EMPTY STATE & NO CHILD ── */
+    .empty-state { text-align: center; padding: 30px 20px; color: #CCC; }
     .empty-state span { font-size: 36px; display: block; margin-bottom: 8px; }
     .empty-state p    { font-size: 13px; }
 
-    /* ── LOADING ── */
-    .loading-state {
-      text-align: center;
-      padding: 40px;
-      color: #F39C12;
-      font-size: 14px;
-    }
+    .loading-state { text-align: center; padding: 40px; color: #F39C12; font-size: 14px; }
 
-    /* ── PESAN KE ANAK ── */
-    .msg-card {
-      background: linear-gradient(135deg, #FEF9E7, #FFF3CC);
-      border: 2px solid #F9E79F;
-      border-radius: 16px;
-      padding: 16px;
-      margin-bottom: 16px;
-    }
-
-    .msg-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: #7D6608;
-      margin-bottom: 8px;
-    }
-
-    .msg-input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #F9E79F;
-      border-radius: 10px;
-      font-size: 13px;
-      color: #333;
-      outline: none;
-      background: white;
-      margin-bottom: 8px;
-    }
-
-    .btn-send-msg {
-      background: linear-gradient(135deg, #F39C12, #E67E22);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 8px 16px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    /* ── NO CHILD ── */
     .no-child-card {
-      background: white;
-      border-radius: 20px;
-      padding: 30px 20px;
-      text-align: center;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-      margin-bottom: 16px;
+      background: white; border-radius: 20px; padding: 30px 20px;
+      text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.06); margin-bottom: 16px;
     }
-
     .no-child-card .big { font-size: 50px; display: block; margin-bottom: 12px; }
     .no-child-card h3   { font-size: 16px; color: #1A5276; margin-bottom: 8px; }
     .no-child-card p    { font-size: 12px; color: #999; line-height: 1.6; }
 
     .code-display {
-      background: #EBF5FB;
-      border: 2px dashed #2E86C1;
-      border-radius: 12px;
-      padding: 12px;
-      margin: 12px 0;
-      font-size: 20px;
-      font-weight: 900;
-      color: #1A5276;
-      letter-spacing: 3px;
+      background: #EBF5FB; border: 2px dashed #2E86C1; border-radius: 12px;
+      padding: 12px; margin: 12px 0; font-size: 20px; font-weight: 900; color: #1A5276; letter-spacing: 3px;
     }
 
     .btn-copy {
-      background: #2E86C1;
-      color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 8px 16px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
+      background: #2E86C1; color: white; border: none; border-radius: 10px;
+      padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer;
     }
 
-    /* ── SECTION LABEL ── */
+    /* ── SECTION LABEL & MSG CARD ── */
     .section-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: #999;
-      letter-spacing: 1px;
-      margin-bottom: 8px;
-      margin-top: 4px;
+      font-size: 11px; font-weight: 700; color: #999; letter-spacing: 1px;
+      margin-bottom: 8px; margin-top: 4px;
+    }
+
+    .msg-card {
+      background: linear-gradient(135deg, #FEF9E7, #FFF3CC); border: 2px solid #F9E79F;
+      border-radius: 16px; padding: 16px; margin-bottom: 16px;
+    }
+    .msg-label { font-size: 11px; font-weight: 700; color: #7D6608; margin-bottom: 8px; }
+    .msg-input {
+      width: 100%; padding: 10px 12px; border: 1px solid #F9E79F; border-radius: 10px;
+      font-size: 13px; color: #333; outline: none; background: white; margin-bottom: 8px;
+    }
+    .btn-send-msg {
+      background: linear-gradient(135deg, #F39C12, #E67E22); color: white; border: none;
+      border-radius: 10px; padding: 8px 16px; font-size: 12px; font-weight: 700; cursor: pointer;
     }
   </style>
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="./supabase.js"></script>
   <script src="./navbar.js"></script>
 </head>
 <body>
 
-  <!-- TOPBAR -->
   <div class="topbar">
     <div class="topbar-inner">
       <div>
@@ -501,7 +384,6 @@
     </div>
   </div>
 
-  <!-- CONTENT -->
   <div class="content" id="mainContent">
     <div class="loading-state">⏳ Memuat data...</div>
   </div>
@@ -525,7 +407,6 @@
 
       parentUser = session.user
 
-      // FIX: Pakai window.sb, bukan supabase
       const { data: profile, error: profileError } = await window.sb
         .from('profiles')
         .select('*')
@@ -539,7 +420,9 @@
 
       document.getElementById('parentName').textContent = profile.name
 
-      // FIX: Pakai window.sb
+      // Bikin Kode Referalnya secara Global
+      window.myFamilyCode = 'KOIN-' + profile.name.toUpperCase().replace(/\s/g,'').slice(0,6)
+
       const { data: childList } = await window.sb
         .from('profiles')
         .select('*')
@@ -547,14 +430,6 @@
         .eq('role', 'child')
 
       children = childList || []
-
-      document.getElementById('parentName').textContent = profile.name
-
-      // Bikin Kode Referalnya (KOIN-NAMABAPAK)
-      window.myFamilyCode = 'KOIN-' + profile.name.toUpperCase().replace(/\s/g,'').slice(0,6)
-
-      // FIX: Pakai window.sb
-      const { data: childList } = await window.sb
 
       if (children.length === 0) {
         renderNoChild(profile)
@@ -568,7 +443,6 @@
     async function renderDashboard() {
       const content = document.getElementById('mainContent')
 
-      // FIX: Pakai window.sb
       const { data: transactions } = await window.sb
         .from('transactions')
         .select('*')
@@ -576,14 +450,12 @@
         .order('created_at', { ascending: false })
         .limit(20)
 
-      // FIX: Pakai window.sb
       const { data: wishlists } = await window.sb
         .from('wishlists')
         .select('*')
         .eq('child_id', currentChild.id)
         .order('created_at', { ascending: false })
 
-      // FIX: Pakai window.sb
       const { data: badges } = await window.sb
         .from('badges')
         .select('*')
@@ -596,12 +468,12 @@
       const bgList = badges      || []
 
       // Hitung stats
-      const totalSpent    = txList.filter(t => t.type === 'jajan')
-        .reduce((s, t) => s + t.amount, 0)
+      const totalSpent    = txList.filter(t => t.type === 'jajan').reduce((s, t) => s + t.amount, 0)
       const totalSaved    = currentChild.saving_balance  || 0
       const totalShared   = currentChild.sharing_balance || 0
       const totalHours    = txList.reduce((s, t) => s + (t.equivalent_work_hours || 0), 0)
 
+      // KITA SISIPKAN KODE REFERAL DI SINI (Dalam Tanda Kutip Backtick)
       content.innerHTML = `
 
         ${children.length > 1 ? `
@@ -615,6 +487,18 @@
               </div>`).join('')}
           </div>
         </div>` : ''}
+
+        <div class="activity-card" style="margin-bottom: 16px; background: linear-gradient(135deg, #EBF5FB, #D6EAF8); border: 2px dashed #2E86C1;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+              <div style="font-size:11px; color:#1A5276; font-weight:700;">🔗 KODE KELUARGA (Undang Anak)</div>
+              <div style="font-size:18px; font-weight:900; color:#2E86C1; letter-spacing:2px; margin-top:2px;">${window.myFamilyCode}</div>
+            </div>
+            <button onclick="shareMagicLink()" style="background:#2E86C1; color:white; border:none; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; font-size:12px; box-shadow: 0 4px 10px rgba(46,134,193,0.3);">
+              Bagikan Link 📤
+            </button>
+          </div>
+        </div>
 
         <div class="section-label">📊 STATISTIK ${currentChild.name.toUpperCase()}</div>
         <div class="stats-grid">
@@ -641,18 +525,6 @@
             <div class="stat-label">Badge Didapat</div>
             <div class="stat-value">${bgList.length}</div>
             <div class="stat-sub">pencapaian</div>
-          </div>
-        </div>
-
-        <div class="activity-card" style="margin-bottom: 16px; background: linear-gradient(135deg, #EBF5FB, #D6EAF8); border: 2px dashed #2E86C1;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <div>
-              <div style="font-size:11px; color:#1A5276; font-weight:700;">🔗 KODE KELUARGA (Undang Anak)</div>
-              <div style="font-size:18px; font-weight:900; color:#2E86C1; letter-spacing:2px; margin-top:2px;">${window.myFamilyCode}</div>
-            </div>
-            <button onclick="shareMagicLink()" style="background:#2E86C1; color:white; border:none; padding:10px 14px; border-radius:10px; font-weight:700; cursor:pointer; font-size:12px; box-shadow: 0 4px 10px rgba(46,134,193,0.3);">
-              Bagikan Link 📤
-            </button>
           </div>
         </div>
 
@@ -787,7 +659,7 @@
 
     // ── CHART.JS GRAFIK HARIAN ─────────────────────────────────────────────
     function initChart(txList) {
-      if (typeof Chart === 'undefined') return; // Jaga-jaga kalau CDN gagal load
+      if (typeof Chart === 'undefined') return; 
       const ctx = document.getElementById('financeChart');
       if (!ctx) return;
 
@@ -898,28 +770,8 @@
       alert('Kode sudah disalin! Bagikan ke anak kamu via WhatsApp 😊')
     }
 
-    // ── SEND MESSAGE ───────────────────────────────────────────────────────
-    window.sendMessage = function() {
-    const msg = document.getElementById('msgInput')?.value.trim()
-    if (!msg) return
-
-    const fullMsg = 
-        `🪙 *Pesan dari KOIN*\n\n` +
-        `Hei *${currentChild.name}*! 👋\n\n` +
-        `💬 ${msg}\n\n` +
-        `_Dikirim melalui KOIN — Kenali, Olah, Ingat, Nabung_ 🪙`
-
-    const encoded = encodeURIComponent(fullMsg)
-    window.open(`https://wa.me/?text=${encoded}`, '_blank')
-
-    if (document.getElementById('msgInput')) {
-        document.getElementById('msgInput').value = ''
-    }
-    }
-
     // ── MAGIC LINK BROADCAST ───────────────────────────────────────────────
     window.shareMagicLink = function() {
-      // Link Vercel lu ditambah parameter ?ref=KODENYA
       const link = `https://koin-app.vercel.app/login.html?ref=${window.myFamilyCode}`
       
       const msg = 
@@ -932,6 +784,25 @@
       window.open(`https://wa.me/?text=${encoded}`, '_blank')
     }
 
+    // ── SEND MESSAGE ───────────────────────────────────────────────────────
+    window.sendMessage = function() {
+      const msg = document.getElementById('msgInput')?.value.trim()
+      if (!msg) return
+
+      const fullMsg = 
+          `🪙 *Pesan dari KOIN*\n\n` +
+          `Hei *${currentChild.name}*! 👋\n\n` +
+          `💬 ${msg}\n\n` +
+          `_Dikirim melalui KOIN — Kenali, Olah, Ingat, Nabung_ 🪙`
+
+      const encoded = encodeURIComponent(fullMsg)
+      window.open(`https://wa.me/?text=${encoded}`, '_blank')
+
+      if (document.getElementById('msgInput')) {
+          document.getElementById('msgInput').value = ''
+      }
+    }
+
     // ── LOGOUT ─────────────────────────────────────────────────────────────
     window.logout = async function() {
       await window.sb.auth.signOut()
@@ -942,6 +813,5 @@
     // ── START ──────────────────────────────────────────────────────────────
     init()
   </script>
-
 </body>
 </html>
