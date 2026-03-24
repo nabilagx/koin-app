@@ -73,7 +73,8 @@
 
   <script>
     // ── DATA SETUP ─────────────────────────────────────────────────────────
-    const allowance = parseInt(sessionStorage.getItem('allowance')) || 15000;
+    const allowanceData = sessionStorage.getItem('allowance');
+    const allowance = allowanceData !== null ? parseInt(allowanceData) : 0; 
     const totalSpent = parseInt(sessionStorage.getItem('totalSpent')) || 0;
     const sisa = Math.max(allowance - totalSpent, 0);
     

@@ -638,6 +638,23 @@
     const perHour = profession.daily_income / profession.work_hours
     const fmt     = n => new Intl.NumberFormat('id-ID').format(n)
 
+    // ── KUNCI JIKA BOKEK (UANG 0) ──────────────────────────────────────────
+    if (sisa <= 0) {
+      // Sembunyiin tombol AR dan garis separatornya
+      const btnAr = document.querySelector('.btn-ar');
+      const separator = document.querySelector('.separator-manual');
+      if(btnAr) btnAr.style.display = 'none';
+      if(separator) separator.style.display = 'none';
+
+      // Kunci input manual biar nggak bisa diketik
+      document.getElementById('inputSpending').disabled = true;
+      document.getElementById('inputSaving').disabled = true;
+      document.getElementById('inputSharing').disabled = true;
+
+      // Nyalain tombol "Selesai" supaya mereka bisa lanjut walau celengan 0
+      document.getElementById('btnSelesai').disabled = false;
+    }
+
     // ── EMOJI MAP ──────────────────────────────────────────────────────────
     const emojiMap = {
       'Petani': '👨‍🌾', 'Buruh Bangunan': '👷',
