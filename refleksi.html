@@ -315,6 +315,56 @@
     .saving   .celengan-amount { color: #2ECC71; }
     .sharing  .celengan-amount { color: #9B59B6; }
 
+    /* ── AR BUTTON & SEPARATOR ── */
+    .ar-button-wrap {
+      margin-bottom: 20px;
+    }
+
+    .btn-ar {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #8E44AD, #9B59B6); /* Warna ungu khas magic/AR */
+      color: white;
+      border: 1px solid #D2B4DE;
+      border-radius: 14px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(142, 68, 173, 0.3);
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-ar:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(142, 68, 173, 0.5);
+    }
+
+    .separator-manual {
+      display: flex;
+      align-items: center;
+      text-align: center;
+      margin-top: 18px;
+      margin-bottom: 6px;
+      color: rgba(255,255,255,0.4);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .separator-manual::before,
+    .separator-manual::after {
+      content: '';
+      flex: 1;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .separator-manual::before { margin-right: 12px; }
+    .separator-manual::after { margin-left: 12px; }
+
     /* ── SISA ALOKASI ── */
     .sisa-card {
       max-width: 420px;
@@ -492,10 +542,16 @@
   <div class="celengan-section fade-up delay-3">
     <div class="celengan-title">🪣 Bagi ke Tiga Celengan</div>
     <div class="celengan-sub">Sisa uang jajan Rp <span id="sisaLabel">0</span> — bagi sekarang!</div>
-    <button class="btn-selesai" onclick="window.location.href='ar-celengan.html'" style="margin-top: 15px;">
-      Bagi Uang dengan Kamera (AR) 📸✨
-    </button>
 
+    <div class="ar-button-wrap">
+      <button class="btn-ar" onclick="window.location.href='ar-celengan.html'">
+        <span style="font-size: 16px;">📸</span> Bagi Uang dengan Kamera (AR) ✨
+      </button>
+      
+      <div class="separator-manual">
+        ATAU ISI MANUAL
+      </div>
+    </div>
 
     <div class="celengan-cards">
       <div class="celengan-card spending">
@@ -532,6 +588,8 @@
       </div>
     </div>
   </div>
+
+  
 
   <!-- SISA ALOKASI -->
   <div class="sisa-card fade-up delay-3">
