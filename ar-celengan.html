@@ -94,15 +94,13 @@
     // ── PECAHAN UANG REALISTIS (RUPIAH ASLI) ───────────────────────────────
     let coins = [];
     const validDenoms = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500];
-    let tempSisa = Math.floor(sisa / 500) * 500; // Pembulatan ke 500 terdekat biar nggak ada recehan aneh
+    let tempSisa = Math.floor(sisa / 500) * 500; 
     let coinId = 0;
     
     let w = window.innerWidth;
     let h = window.innerHeight;
 
-    // Memecah sisa uang jadi beberapa koin pecahan yang masuk akal
     while(tempSisa > 0) {
-      // Cari pecahan terbesar yang bernilai setengah dari sisa (biar dapet beberapa koin), atau pecahan pas.
       let pick = validDenoms.find(d => d <= tempSisa / 2) || validDenoms.find(d => d <= tempSisa) || 500;
       
       coins.push({
@@ -133,46 +131,40 @@
     const bucketY = h - 160;
     const bucketH = 130;
 
+    // Tambahin blinkTimer dan state ke masing-masing celengan
     const buckets = [
-      { id: 'spending', color: '#E74C3C', label: '🛒 Spending', x: spacing, y: bucketY, w: bucketW, h: bucketH, faceTimer: 0 },
-      { id: 'saving', color: '#2ECC71', label: '🐷 Saving', x: spacing*2 + bucketW, y: bucketY, w: bucketW, h: bucketH, faceTimer: 0 },
-      { id: 'sharing', color: '#9B59B6', label: '🤝 Sharing', x: spacing*3 + bucketW*2, y: bucketY, w: bucketW, h: bucketH, faceTimer: 0 }
+      { id: 'spending', color: '#E74C3C', label: '🛒 Spending', x: spacing, y: bucketY, w: bucketW, h: bucketH, faceTimer: 0, blinkTimer: 0, state: 'idle' },
+      { id: 'saving', color: '#2ECC71', label: '🐷 Saving', x: spacing*2 + bucketW, y: bucketY, w: bucketW, h: bucketH, faceTimer: 0, blinkTimer: 0, state: 'idle' },
+      { id: 'sharing', color: '#9B59B6', label: '🤝 Sharing', x: spacing*3 + bucketW*2, y: bucketY, w: bucketW, h: bucketH, faceTimer: 0, blinkTimer: 0, state: 'idle' }
     ];
 
     let draggedCoin = null;
 
-    // ── FUNGSI GAMBAR MUKA CELENGAN (ANIMASI KAWAI) ────────────────────────
-    function drawFace(ctx, cx, cy, isHappy) {
-      ctx.strokeStyle = "white";
-      ctx.fillStyle = "white";
-      ctx.lineWidth = 4;
-      ctx.lineCap = "round";
-      ctx.lineJoin = "round";
-
-      if (isHappy) {
-         // Mata seneng: ^ ^
-         ctx.beginPath(); ctx.moveTo(cx - 15, cy - 2); ctx.lineTo(cx - 10, cy - 8); ctx.lineTo(cx - 5, cy - 2); ctx.stroke();
-         ctx.beginPath(); ctx.moveTo(cx + 5, cy - 2); ctx.lineTo(cx + 10, cy - 8); ctx.lineTo(cx + 15, cy - 2); ctx.stroke();
-         // Mulut Mangap Lebar: D
-         ctx.beginPath(); ctx.arc(cx, cy + 5, 12, 0, Math.PI, false); ctx.fill();
-      } else {
-         // Mata normal: o o
-         ctx.beginPath(); ctx.arc(cx - 10, cy - 5, 4, 0, Math.PI*2); ctx.fill();
-         ctx.beginPath(); ctx.arc(cx + 10, cy - 5, 4, 0, Math.PI*2); ctx.fill();
-         // Mulut senyum tipis: u
-         ctx.beginPath(); ctx.arc(cx, cy + 2, 8, 0, Math.PI, false); ctx.stroke();
-      }
-    }
-
+    // ── FUNGSI GAMBAR MUKA CELENGAN (ANIMASI KEDIP & MANGAP) ───────────────
     function drawBucket(ctx, b) {
       let currentY = b.y;
-      let isHappy = false;
 
-      // Animasi lompat dan senyum kalau koin masuk / dideketin
-      if (b.faceTimer > 0) {
-        b.faceTimer--;
-        isHappy = true;
-        currentY = b.y - 15; // Efek bouncing ke atas
+      // Logic State Celengan
+      if (b.faceTimer > 10) {
+        b.state = 'happy'; // Pas koin udah masuk (Bouncing & Seneng)
+        currentY = b.y - 15;
+      } else if (b.faceTimer > 0) {
+        b.state = 'hover'; // Pas koin melayang di atasnya (Muka nunggu)
+      } else {
+        b.state = 'idle';  // Diam normal
+      }
+
+      // Logic Kedip (Blink) - Hanya saat idle atau hover
+      if (b.blinkTimer > 0) {
+        b.blinkTimer--;
+      } else if (Math.random() < 0.02 && b.state !== 'happy') {
+        b.blinkTimer = 10; // Durasi mata nutup pas kedip (10 frame)
+      }
+
+      let isBlinking = b.blinkTimer > 0;
+
+      // Gambar Badan Celengan
+      if (b.state === 'happy') {
         ctx.shadowColor = b.color;
         ctx.shadowBlur = 20;
       } else {
@@ -180,13 +172,11 @@
         ctx.shadowBlur = 10;
       }
 
-      // Badan Celengan
       ctx.fillStyle = b.color;
       ctx.beginPath();
       ctx.roundRect(b.x, currentY, b.w, b.h, 24);
       ctx.fill();
 
-      // Reset Shadow untuk Teks
       ctx.shadowBlur = 0;
       
       // Label Atas
@@ -195,33 +185,68 @@
       ctx.textAlign = 'center';
       ctx.fillText(b.label, b.x + (b.w / 2), currentY + 30);
       
-      // Muka Kawaii
-      drawFace(ctx, b.x + (b.w / 2), currentY + 65, isHappy);
+      // ── MENGGAMBAR EKSPRESI WAJAH ──
+      const cx = b.x + (b.w / 2);
+      const cy = currentY + 65;
+      
+      ctx.strokeStyle = "white";
+      ctx.fillStyle = "white";
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      // 1. Mata
+      if (b.state === 'happy') {
+         // Mata seneng: ^ ^
+         ctx.beginPath(); ctx.moveTo(cx - 15, cy - 2); ctx.lineTo(cx - 10, cy - 8); ctx.lineTo(cx - 5, cy - 2); ctx.stroke();
+         ctx.beginPath(); ctx.moveTo(cx + 5, cy - 2); ctx.lineTo(cx + 10, cy - 8); ctx.lineTo(cx + 15, cy - 2); ctx.stroke();
+      } else if (isBlinking) {
+         // Mata kedip: - - (Garis datar)
+         ctx.beginPath(); ctx.moveTo(cx - 14, cy - 5); ctx.lineTo(cx - 6, cy - 5); ctx.stroke();
+         ctx.beginPath(); ctx.moveTo(cx + 6, cy - 5); ctx.lineTo(cx + 14, cy - 5); ctx.stroke();
+      } else {
+         // Mata normal: o o (Bulet)
+         ctx.beginPath(); ctx.arc(cx - 10, cy - 5, 4, 0, Math.PI*2); ctx.fill();
+         ctx.beginPath(); ctx.arc(cx + 10, cy - 5, 4, 0, Math.PI*2); ctx.fill();
+      }
+
+      // 2. Mulut
+      if (b.state === 'happy') {
+         // Mulut Mangap Lebar (D)
+         ctx.beginPath(); ctx.arc(cx, cy + 5, 12, 0, Math.PI, false); ctx.fill();
+      } else if (b.state === 'hover') {
+         // Mulut O (Nunggu koin masuk)
+         ctx.beginPath(); ctx.arc(cx, cy + 4, 5, 0, Math.PI*2); ctx.stroke();
+      } else {
+         // Mulut senyum tipis
+         ctx.beginPath(); ctx.arc(cx, cy + 2, 8, 0, Math.PI, false); ctx.stroke();
+      }
 
       // Saldo Tabungan
       ctx.fillStyle = '#F9E79F';
       ctx.font = '900 18px "Segoe UI", Arial';
-      ctx.fillText(`Rp ${new Intl.NumberFormat('id-ID').format(balances[b.id])}`, b.x + (b.w / 2), currentY + 110);
+      ctx.fillText(`Rp ${new Intl.NumberFormat('id-ID').format(balances[b.id])}`, cx, currentY + 110);
     }
 
     // ── AI HAND TRACKING LOGIC ─────────────────────────────────────────────
     function onResults(results) {
       time += 0.05; 
-
       document.getElementById('loadingUi').style.display = 'none';
       
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
       
-      // Mirror Video feed saja
       canvasCtx.save();
       canvasCtx.scale(-1, 1);
       canvasCtx.translate(-canvasElement.width, 0);
       canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
       canvasCtx.restore(); 
 
-      // Render Celengan
-      buckets.forEach(b => drawBucket(canvasCtx, b));
+      // Turunin faceTimer buat tiap frame
+      buckets.forEach(b => {
+        if (b.faceTimer > 0) b.faceTimer--;
+        drawBucket(canvasCtx, b);
+      });
 
       let isPinching = false;
       let pinchX = 0;
@@ -229,7 +254,6 @@
 
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
         for (const landmarks of results.multiHandLandmarks) {
-            // Balik koordinat rangka tangan biar cocok sama video yang di mirror
             const mirroredLandmarks = landmarks.map(lm => ({ x: 1 - lm.x, y: lm.y, z: lm.z }));
             drawConnectors(canvasCtx, mirroredLandmarks, HAND_CONNECTIONS, {color: '#F39C12', lineWidth: 4});
             drawLandmarks(canvasCtx, mirroredLandmarks, {color: '#FFF3CC', lineWidth: 2, radius: 4});
@@ -241,14 +265,12 @@
         const ix = (1 - landmarks[8].x) * w;
         const iy = landmarks[8].y * h;
 
-        // Threshold Pinch dibuat 90 supaya gampang nyubitnya
         const dist = Math.hypot(tx - ix, ty - iy);
         if (dist < 90) { 
           isPinching = true;
           pinchX = (tx + ix) / 2;
           pinchY = (ty + iy) / 2;
           
-          // Efek visual jari lagi nyubit
           canvasCtx.beginPath();
           canvasCtx.arc(pinchX, pinchY, 25, 0, 2 * Math.PI);
           canvasCtx.fillStyle = 'rgba(243, 156, 18, 0.7)';
@@ -266,7 +288,6 @@
             let c = coins[i];
             if (c.active) {
               const d = Math.hypot(c.x - pinchX, c.y - pinchY);
-              // Hitbox koin diperbesar banget (radius + 80) biar kayak magnet
               if (d < c.radius + 80) { 
                 c.isDragging = true;
                 draggedCoin = c;
@@ -279,10 +300,10 @@
           draggedCoin.x = pinchX;
           draggedCoin.y = pinchY;
 
-          // Bikin mulut celengan mangap kalau uangnya ada di atasnya
           buckets.forEach(b => {
+             // Kalau koin di atas celengan, set faceTimer ke 2 terus (Hover State)
              if (draggedCoin.x > b.x && draggedCoin.x < b.x + b.w && draggedCoin.y > b.y - 100) {
-                 b.faceTimer = 2; // Tahan mode muka seneng
+                 b.faceTimer = 2; 
              }
           });
         }
@@ -291,7 +312,6 @@
           let droppedInBucket = false;
           
           buckets.forEach(b => {
-            // Area jatuh (dropzone) celengan juga diperluas ke atas (b.y - 100)
             if (draggedCoin.x > b.x && draggedCoin.x < b.x + b.w && 
                 draggedCoin.y > b.y - 100 && draggedCoin.y < b.y + b.h) {
               
@@ -300,7 +320,7 @@
               draggedCoin.active = false; 
               droppedInBucket = true;
               
-              b.faceTimer = 20; // Bouncing kegirangan lebih lama
+              b.faceTimer = 25; // Set timer agak lama biar animasi loncatnya kelihatan
               playSound(sfxDrop); 
               
               if (remainingToDistribute <= 0) {
@@ -319,14 +339,12 @@
       coins.forEach(c => {
         if (c.active) {
           if (!c.isDragging) {
-              // Animasi koin melayang kiri-kanan & atas-bawah
               c.x = c.baseX + Math.sin(time + c.phase) * 10; 
               c.y = c.baseY + Math.cos(time + c.phase) * 15; 
           }
 
           canvasCtx.beginPath();
           canvasCtx.arc(c.x, c.y, c.radius, 0, 2 * Math.PI);
-          // Warna koin beda-beda tergantung pecahan uangnya
           canvasCtx.fillStyle = c.value >= 50000 ? '#3498DB' : (c.value >= 10000 ? '#2ECC71' : '#F1C40F');
           canvasCtx.fill();
           
