@@ -387,14 +387,15 @@
         const emoji = document.querySelector('.result-emoji');
 
         // Bikin pesan hasil yang realistis
+        // Bikin pesan hasil yang realistis
         if (currentMoney >= allowance) {
             title.textContent = "Wah, Hebat Banget! 🚀";
             emoji.textContent = "🥳";
-            desc.innerHTML = `Kerja kerasmu terbayar lunas! Kamu berhasil ngumpulin uang jajan **Rp${fmt(currentMoney)}**! <br><br>Bayangin, ini baru 15 detik. Ayah/Ibu kerja keras berjam-jam setiap hari buat ngasih kamu uang jajan lho. Yuk kita pakai uangnya baik-baik! 💛`;
+            desc.innerHTML = `Kerja kerasmu terbayar lunas! Kamu berhasil ngumpulin uang jajan <strong>Rp${fmt(currentMoney)}</strong>! <br><br>Bayangin, ini baru 15 detik. Ayah/Ibu kerja keras berjam-jam setiap hari buat ngasih kamu uang jajan lho. Yuk kita pakai uangnya baik-baik! 💛`;
         } else if (currentMoney > 0) {
             title.textContent = "Waktu Habis! ⏱️";
             emoji.textContent = "😅";
-            desc.innerHTML = `Sayang sekali! Karena kurang cepat kerjanya, uang jajan yang berhasil kamu dapat hari ini cuma **Rp${fmt(currentMoney)}**. <br><br>Gak apa-apa, namanya juga belajar nyari uang. Nanti jajan dan nabungnya harus dicukup-cukupin dari uang segini ya! 💸`;
+            desc.innerHTML = `Sayang sekali! Karena kurang cepat kerjanya, uang jajan yang berhasil kamu dapat hari ini cuma <strong>Rp${fmt(currentMoney)}</strong>. <br><br>Gak apa-apa, namanya juga belajar nyari uang. Nanti jajan dan nabungnya harus dicukup-cukupin dari uang segini ya! 💸`;
         } else {
             // Kasus ekstrem kalau anak diem doang (0 tap)
             title.textContent = "Loh, Kok Gak Kerja? 😱";
@@ -408,12 +409,18 @@
         if (currentMoney > 0) {
             document.getElementById('btnNext').classList.add('show');
         } else {
-            // Kasih tombol buat ngulang nyoba kerja lagi
-            document.getElementById('btnWrap').innerHTML = `
-                <button class="btn-next show" onclick="location.reload()">
-                    Yah, Coba Kerja Lagi Deh 🔨
-                </button>
-            `;
+            // Sembunyikan tombol NEXT kalau uangnya 0 (karena nggak bisa jajan)
+            if (currentMoney > 0) {
+                document.getElementById('btnNext').classList.add('show');
+            } else {
+                // Langsung "tendang" ke refleksi!
+                sessionStorage.setItem('totalSpent', 0); // Pastikan pengeluaran 0
+                document.getElementById('btnWrap').innerHTML = `
+                    <button class="btn-next show" style="background: linear-gradient(135deg, #E74C3C, #C0392B); box-shadow: 0 4px 15px rgba(231,76,60,0.4);" onclick="window.location.href='refleksi.html'">
+                        Bokek! Langsung Refleksi Aja 😭
+                    </button>
+                `;
+            }
         }
 
       }, 1000); 

@@ -652,10 +652,15 @@
       `${((totalSpent/profession.daily_income)*100).toFixed(0)}% pendapatan ${profession.name}`
 
     // ── REFLEKSI MESSAGE ───────────────────────────────────────────────────
+    // ── REFLEKSI MESSAGE ───────────────────────────────────────────────────
     const ratio = (totalSpent / profession.daily_income) * 100
 
     let emoji, msg, quote
-    if (ratio === 0) {
+    if (allowance === 0) {
+      emoji = '💸'; 
+      msg = `Hari ini kamu nggak kerja sama sekali, jadi nggak punya uang jajan buat dibagi. Besok jangan malas bantu Ayah/Ibu ya!`
+      quote = '— Siapa yang tidak bekerja, tidak akan jajan'
+    } else if (ratio === 0) {
       emoji = '🌟'; msg = `Luar biasa! Kamu tidak belanja apapun hari ini. Semua uang bisa ditabung!`
       quote = '— Hemat pangkal kaya!'
     } else if (ratio <= 25) {
@@ -726,6 +731,7 @@
     }
 
     // ── BADGE ──────────────────────────────────────────────────────────────
+    // ── BADGE ──────────────────────────────────────────────────────────────
     function showBadge(spending, saving, sharing) {
       const badgeCard = document.getElementById('badgeCard')
       let badgeEmoji, badgeName, badgeDesc
@@ -733,6 +739,9 @@
       const savingPct  = saving / sisa * 100
       const sharingPct = sharing / sisa * 100
 
+      if (allowance === 0) {
+        badgeEmoji = '🗿'; badgeName = 'Si Paling Mager!'
+        badgeDesc  = 'Gak kerja, gak jajan, gak nabung. Parah nih!'
       if (ratio <= 25 && savingPct >= 50) {
         badgeEmoji = '🏆'; badgeName = 'Super Hemat!'
         badgeDesc  = 'Kamu hemat dan banyak menabung. Luar biasa!'
