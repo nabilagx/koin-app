@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>KOIN — AR Celengan (Pinch to Drop)</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #1A1A2E;
+      color: white;
+      overflow: hidden; /* Prevent scrolling in AR mode */
+    }
+
+    /* Video and Canvas */
+    .ar-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: #000;
+    }
+
+    .input-video {
+      display: none; /* Hidden, we draw it to canvas */
+    }
+
+    .output-canvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+      transform: scaleX(-1); /* Mirror effect for natural feeling */
+    }
+
+    /* UI Overlay */
+    .ui-overlay {
+      position: absolute;
+      top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; /* Let clicks pass through if needed */
+      z-index: 10;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 20px;
+    }
+
+    .header-info {
+      background: rgba(0, 0, 0, 0.6);
+      padding: 12px 20px;
+      border-radius: 16px;
+      text-align: center;
+      backdrop-filter: blur(5px);
+      max-width: 400px;
+      margin: 0 auto;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header-info h2 { font-size: 16px; color: #F39C12; margin-bottom: 4px; }
+    .header-info p { font-size: 12px; color: #CCC; }
+
+    .loading-ui {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0, 0, 0, 0.8);
+      padding: 20px 30px;
+      border-radius: 16px;
+      text-align: center;
+      z-index: 20;
+    }
+
+    .spinner {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 10px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+
+    .btn-selesai {
+      position: absolute;
+      bottom: 120px; left: 50%;
+      transform: translateX(-50%);
+      padding: 14px 30px;
+      background: linear-gradient(135deg, #27AE60, #1E8449);
+      color: white;
+      border: none;
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: bold;
+      pointer-events: auto;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 4px 15px rgba(39, 174, 96, 0.4);
+      z-index: 30;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="ar-container">
+    <video class="input-video" autoplay playsinline></video>
+    <canvas class="output-canvas" id="canvas"></canvas>
+    
+    <div class="loading-ui" id="loadingUi">
+      <span class="spinner">⏳</span>
+      <p>Menyiapkan Kamera AI...</p>
+    </div>
+
+    <div class="ui-overlay">
+      <div class="header-info">
+        <h2>💰 AR Celengan</h2>
+        <p>Gunakan jempol dan telunjukmu untuk mencubit (pinch) koin dan masukkan ke dalam keranjang di bawah layar.</p>
+        <p style="margin-top: 8px; font-weight: bold;" id="sisaText">Sisa Uang: Rp 0</p>
+      </div>
+    </div>
+
+    <button class="btn-selesai" id="btnSelesai" onclick="simpanDanLanjut()">Simpan & Lanjut 🚀</button>
+  </div>
+
+  <script>
+    // ── DATA SETUP ─────────────────────────────────────────────────────────
+    const allowance = parseInt(sessionStorage.getItem('allowance')) || 0;
+    const totalSpent = parseInt(sessionStorage.getItem('totalSpent')) || 0;
+    const sisa = Math.max(allowance - totalSpent, 0);
+    
+    document.getElementById('sisaText').textContent = `Sisa Uang: Rp ${new Intl.NumberFormat('id-ID').format(sisa)}`;
+
+    // Bagi sisa uang jadi 5 koin virtual biar gak terlalu banyak
+    const numCoins = 5;
+    const valuePerCoin = Math.floor(sisa / numCoins);
+    let remainingToDistribute = sisa;
+
+    // State Celengan
+    let balances = { spending: 0, saving: 0, sharing: 0 };
+
+    // ── CANVAS & AR STATE ──────────────────────────────────────────────────
+    const videoElement = document.querySelector('.input-video');
+    const canvasElement = document.querySelector('.output-canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+    canvasElement.width = w;
+    canvasElement.height = h;
+
+    // Definisi Koin Virtual
+    let coins = [];
+    for (let i = 0; i < numCoins; i++) {
+      coins.push({
+        id: i,
+        x: w / 2 + (Math.random() * 100 - 50), // Spawn in middle area
+        y: h / 3 + (Math.random() * 50),
+        radius: 30,
+        value: valuePerCoin,
+        isDragging: false,
+        active: true
+      });
+    }
+
+    // Definisi Area Celengan (Bawah Layar)
+    const bucketW = w / 3;
+    const buckets = [
+      { id: 'spending', color: 'rgba(231, 76, 60, 0.7)', label: '🛒 Spending', x: 0, y: h - 100, w: bucketW, h: 100 },
+      { id: 'saving', color: 'rgba(46, 204, 113, 0.7)', label: '🐷 Saving', x: bucketW, y: h - 100, w: bucketW, h: 100 },
+      { id: 'sharing', color: 'rgba(155, 89, 182, 0.7)', label: '🤝 Sharing', x: bucketW * 2, y: h - 100, w: bucketW, h: 100 }
+    ];
+
+    let draggedCoin = null;
+
+    // ── AI HAND TRACKING LOGIC ─────────────────────────────────────────────
+    function onResults(results) {
+      document.getElementById('loadingUi').style.display = 'none';
+      
+      canvasCtx.save();
+      canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+      
+      // Draw camera feed
+      canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+      // Draw Buckets
+      buckets.forEach(b => {
+        canvasCtx.fillStyle = b.color;
+        canvasCtx.fillRect(b.x, b.y, b.w, b.h);
+        canvasCtx.fillStyle = 'white';
+        canvasCtx.font = 'bold 16px Arial';
+        canvasCtx.textAlign = 'center';
+        canvasCtx.fillText(b.label, b.x + (b.w / 2), b.y + 40);
+        canvasCtx.fillText(`Rp ${new Intl.NumberFormat('id-ID').format(balances[b.id])}`, b.x + (b.w / 2), b.y + 70);
+      });
+
+      let isPinching = false;
+      let pinchX = 0;
+      let pinchY = 0;
+
+      // Mendeteksi gestur pinch dari tangan pertama yang terdeteksi
+      if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+        const landmarks = results.multiHandLandmarks[0];
+        const thumbTip = landmarks[4];
+        const indexTip = landmarks[8];
+
+        // Karena canvas di-mirror (scaleX(-1)), koordinat X harus dibalik
+        const tx = (1 - thumbTip.x) * w; 
+        const ty = thumbTip.y * h;
+        const ix = (1 - indexTip.x) * w;
+        const iy = indexTip.y * h;
+
+        // Visualisasi titik telunjuk dan jempol
+        canvasCtx.beginPath();
+        canvasCtx.arc(tx, ty, 8, 0, 2 * Math.PI);
+        canvasCtx.arc(ix, iy, 8, 0, 2 * Math.PI);
+        canvasCtx.fillStyle = '#F39C12';
+        canvasCtx.fill();
+
+        // Hitung jarak (Pinch)
+        const dist = Math.hypot(tx - ix, ty - iy);
+        if (dist < 40) { // Threshold cubitan
+          isPinching = true;
+          pinchX = (tx + ix) / 2;
+          pinchY = (ty + iy) / 2;
+          
+          // Visualisasi indikator cubit aktif
+          canvasCtx.beginPath();
+          canvasCtx.arc(pinchX, pinchY, 15, 0, 2 * Math.PI);
+          canvasCtx.fillStyle = 'rgba(243, 156, 18, 0.5)';
+          canvasCtx.fill();
+        }
+      }
+
+      // ── LOGIC DRAG AND DROP ──────────────────────────────────────────────
+      if (isPinching) {
+        // Jika belum ada yang di-drag, cek apakah pinch mengenai koin
+        if (!draggedCoin) {
+          for (let i = coins.length - 1; i >= 0; i--) {
+            let c = coins[i];
+            if (c.active) {
+              const d = Math.hypot(c.x - pinchX, c.y - pinchY);
+              if (d < c.radius + 20) {
+                c.isDragging = true;
+                draggedCoin = c;
+                break; // Hanya ambil 1 koin
+              }
+            }
+          }
+        } else {
+          // Update posisi koin mengikuti pinch
+          draggedCoin.x = pinchX;
+          draggedCoin.y = pinchY;
+        }
+      } else {
+        // Pinch dilepas (Drop)
+        if (draggedCoin) {
+          // Cek apakah jatuh di dalam area bucket
+          buckets.forEach(b => {
+            if (draggedCoin.x > b.x && draggedCoin.x < b.x + b.w && 
+                draggedCoin.y > b.y && draggedCoin.y < b.y + b.h) {
+              
+              // Koin masuk celengan
+              balances[b.id] += draggedCoin.value;
+              remainingToDistribute -= draggedCoin.value;
+              draggedCoin.active = false; // Sembunyikan koin
+              
+              // Cek jika semua koin habis
+              if (remainingToDistribute <= 0) {
+                document.getElementById('btnSelesai').style.display = 'block';
+              }
+            }
+          });
+          
+          draggedCoin.isDragging = false;
+          draggedCoin = null;
+        }
+      }
+
+      // Draw Koin yang masih aktif
+      coins.forEach(c => {
+        if (c.active) {
+          canvasCtx.beginPath();
+          canvasCtx.arc(c.x, c.y, c.radius, 0, 2 * Math.PI);
+          canvasCtx.fillStyle = '#F1C40F';
+          canvasCtx.fill();
+          canvasCtx.lineWidth = 4;
+          canvasCtx.strokeStyle = '#D4AC0D';
+          canvasCtx.stroke();
+          
+          // Ikon koin
+          canvasCtx.fillStyle = 'white';
+          canvasCtx.font = '24px Arial';
+          canvasCtx.textAlign = 'center';
+          canvasCtx.textBaseline = 'middle';
+          canvasCtx.fillText('🪙', c.x, c.y + 2);
+        }
+      });
+
+      canvasCtx.restore();
+    }
+
+    // ── INITIALIZE MEDIAPIPE ───────────────────────────────────────────────
+    const hands = new Hands({locateFile: (file) => {
+      return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+    }});
+    
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 1,
+      minDetectionConfidence: 0.7,
+      minTrackingConfidence: 0.7
+    });
+    
+    hands.onResults(onResults);
+
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await hands.send({image: videoElement});
+      },
+      width: 1280,
+      height: 720
+    });
+    camera.start();
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+      w = window.innerWidth;
+      h = window.innerHeight;
+      canvasElement.width = w;
+      canvasElement.height = h;
+      // Recalculate buckets position
+      const newBucketW = w / 3;
+      buckets[0].y = h - 100; buckets[0].w = newBucketW;
+      buckets[1].x = newBucketW; buckets[1].y = h - 100; buckets[1].w = newBucketW;
+      buckets[2].x = newBucketW * 2; buckets[2].y = h - 100; buckets[2].w = newBucketW;
+    });
+
+    // ── SIMPAN & LANJUT ────────────────────────────────────────────────────
+    function simpanDanLanjut() {
+      // Menyamakan struktur data dengan yang diharapkan di refleksi.html / selesai.html
+      sessionStorage.setItem('celengan', JSON.stringify({
+        spending: balances.spending,
+        saving: balances.saving,
+        sharing: balances.sharing
+      }));
+      
+      // Stop kamera
+      if (videoElement.srcObject) {
+        videoElement.srcObject.getTracks().forEach(track => track.stop());
+      }
+      
+      // Lompat ke wishlist
+      window.location.href = 'wishlist.html';
+    }
+  </script>
+</body>
+</html>
