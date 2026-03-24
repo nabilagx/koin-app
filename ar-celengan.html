@@ -11,93 +11,35 @@
   
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #1A1A2E;
-      color: white;
-      overflow: hidden; 
-    }
-
-    .ar-container {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #000;
-    }
-
+    body { font-family: 'Segoe UI', sans-serif; background: #1A1A2E; color: white; overflow: hidden; }
+    .ar-container { position: relative; width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center; background: #000; }
     .input-video { display: none; }
-
-    /* Canvas sekarang nggak di-mirror dari CSS! */
-    .output-canvas {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
+    .output-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    .ui-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 10; display: flex; flex-direction: column; justify-content: space-between; padding: 20px; }
+    
+    .header-info { 
+      background: rgba(26, 82, 118, 0.85); padding: 16px 24px; border-radius: 20px; 
+      text-align: center; backdrop-filter: blur(10px); max-width: 450px; margin: 0 auto; 
+      border: 3px solid #F9E79F; box-shadow: 0 8px 32px rgba(0,0,0,0.3); 
     }
-
-    /* UI Overlay */
-    .ui-overlay {
-      position: absolute;
-      top: 0; left: 0; width: 100%; height: 100%;
-      pointer-events: none; 
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      padding: 20px;
-    }
-
-    .header-info {
-      background: rgba(26, 82, 118, 0.85); /* Tema warna KOIN */
-      padding: 16px 24px;
-      border-radius: 20px;
-      text-align: center;
-      backdrop-filter: blur(10px);
-      max-width: 450px;
-      margin: 0 auto;
-      border: 3px solid #F9E79F;
-      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-    }
-
     .header-info h2 { font-size: 18px; color: #F39C12; margin-bottom: 6px; font-weight: 900; letter-spacing: 1px;}
     .header-info p { font-size: 13px; color: #FFF; line-height: 1.5; }
-
-    .loading-ui {
-      position: absolute;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(26, 82, 118, 0.9);
-      padding: 24px 32px;
-      border-radius: 20px;
-      text-align: center;
-      z-index: 20;
-      border: 2px solid #F9E79F;
+    
+    .loading-ui { 
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+      background: rgba(26, 82, 118, 0.9); padding: 24px 32px; border-radius: 20px; 
+      text-align: center; z-index: 20; border: 2px solid #F9E79F; 
     }
-
     .spinner { font-size: 40px; display: block; margin-bottom: 12px; animation: spin 1s linear infinite; }
     @keyframes spin { 100% { transform: rotate(360deg); } }
-
-    .btn-selesai {
-      position: absolute;
-      bottom: 140px; left: 50%;
-      transform: translateX(-50%);
-      padding: 16px 36px;
-      background: linear-gradient(135deg, #F39C12, #E67E22);
-      color: white;
-      border: none;
-      border-radius: 24px;
-      font-size: 18px;
-      font-weight: 900;
-      pointer-events: auto;
-      cursor: pointer;
-      display: none;
-      box-shadow: 0 8px 25px rgba(243, 156, 18, 0.5);
-      z-index: 30;
-      transition: all 0.2s;
-      border: 2px solid #F9E79F;
+    
+    .btn-selesai { 
+      position: absolute; bottom: 160px; left: 50%; transform: translateX(-50%); 
+      padding: 16px 36px; background: linear-gradient(135deg, #F39C12, #E67E22); 
+      color: white; border: none; border-radius: 24px; font-size: 18px; font-weight: 900; 
+      pointer-events: auto; cursor: pointer; display: none; 
+      box-shadow: 0 8px 25px rgba(243, 156, 18, 0.5); z-index: 30; transition: all 0.2s; 
+      border: 2px solid #F9E79F; 
     }
     .btn-selesai:hover { transform: translate(-50%, -4px); box-shadow: 0 12px 30px rgba(243, 156, 18, 0.6); }
   </style>
@@ -115,13 +57,13 @@
     <div class="loading-ui" id="loadingUi">
       <span class="spinner">⏳</span>
       <p style="font-weight: 700;">Menyiapkan Kamera Ajaib...</p>
-      <p style="font-size: 11px; margin-top: 4px; color: #F9E79F;">Tunggu sebentar ya!</p>
+      <p style="font-size: 11px; margin-top: 4px; color: #F9E79F;">Pastikan tanganmu terlihat jelas ya!</p>
     </div>
 
     <div class="ui-overlay">
       <div class="header-info">
         <h2>💰 MAGIC AR KOIN</h2>
-        <p>Gunakan jempol dan telunjukmu untuk <strong>mencubit (pinch)</strong> koin yang melayang dan masukkan ke dalam celengan!</p>
+        <p>Cubit (pinch) uang yang melayang dan masukkan ke dalam celengan di bawah!</p>
         <p style="margin-top: 10px; font-weight: 900; font-size: 16px; color: #2ECC71;" id="sisaText">Sisa Uang: Rp 0</p>
       </div>
     </div>
@@ -131,308 +73,307 @@
 
   <script>
     // ── DATA SETUP ─────────────────────────────────────────────────────────
-    const allowance = parseInt(sessionStorage.getItem('allowance')) || 10000;
+    const allowance = parseInt(sessionStorage.getItem('allowance')) || 15000;
     const totalSpent = parseInt(sessionStorage.getItem('totalSpent')) || 0;
     const sisa = Math.max(allowance - totalSpent, 0);
     
     document.getElementById('sisaText').textContent = `Sisa Uang: Rp ${new Intl.NumberFormat('id-ID').format(sisa)}`;
 
-    // Bagi sisa uang jadi koin
-    const numCoins = sisa > 0 ? 5 : 0; 
-    const valuePerCoin = numCoins > 0 ? Math.floor(sisa / numCoins) : 0;
     let remainingToDistribute = sisa;
     let balances = { spending: 0, saving: 0, sharing: 0 };
 
-    // Audio SFX
     const sfxCoin = document.getElementById('sfx-coin');
     const sfxDrop = document.getElementById('sfx-drop');
     const sfxWin = document.getElementById('sfx-win');
     
     function playSound(audioEl) {
       audioEl.currentTime = 0;
-      audioEl.play().catch(e => console.log("Audio play blocked by browser"));
+      audioEl.play().catch(e => console.log("Audio diblokir browser"));
+    }
+
+    // ── PECAHAN UANG REALISTIS (RUPIAH ASLI) ───────────────────────────────
+    let coins = [];
+    const validDenoms = [100000, 50000, 20000, 10000, 5000, 2000, 1000, 500];
+    let tempSisa = Math.floor(sisa / 500) * 500; // Pembulatan ke 500 terdekat biar nggak ada recehan aneh
+    let coinId = 0;
+    
+    let w = window.innerWidth;
+    let h = window.innerHeight;
+
+    // Memecah sisa uang jadi beberapa koin pecahan yang masuk akal
+    while(tempSisa > 0) {
+      // Cari pecahan terbesar yang bernilai setengah dari sisa (biar dapet beberapa koin), atau pecahan pas.
+      let pick = validDenoms.find(d => d <= tempSisa / 2) || validDenoms.find(d => d <= tempSisa) || 500;
+      
+      coins.push({
+         id: coinId++,
+         baseX: w / 2 + (Math.random() * (w/2) - w/4),
+         baseY: h / 4 + (Math.random() * 150),
+         x: 0, y: 0,
+         radius: pick >= 20000 ? 50 : (pick >= 5000 ? 42 : 35),
+         value: pick,
+         label: pick >= 1000 ? (pick/1000) + 'K' : String(pick),
+         isDragging: false,
+         active: true,
+         phase: Math.random() * Math.PI * 2
+      });
+      tempSisa -= pick;
     }
 
     // ── CANVAS & AR STATE ──────────────────────────────────────────────────
     const videoElement = document.querySelector('.input-video');
     const canvasElement = document.querySelector('.output-canvas');
     const canvasCtx = canvasElement.getContext('2d');
-    
-    let w = window.innerWidth;
-    let h = window.innerHeight;
-    canvasElement.width = w;
-    canvasElement.height = h;
+    canvasElement.width = w; canvasElement.height = h;
 
-    // Load Image Assets untuk Celengan biar nggak kaku
-    const imgSpending = new Image(); imgSpending.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="70" rx="15" fill="%23E74C3C"/><text x="50" y="65" font-size="40" text-anchor="middle" dominant-baseline="middle">🛒</text></svg>';
-    const imgSaving = new Image(); imgSaving.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="70" rx="15" fill="%232ECC71"/><text x="50" y="65" font-size="40" text-anchor="middle" dominant-baseline="middle">🐷</text></svg>';
-    const imgSharing = new Image(); imgSharing.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="10" y="20" width="80" height="70" rx="15" fill="%239B59B6"/><text x="50" y="65" font-size="40" text-anchor="middle" dominant-baseline="middle">🤝</text></svg>';
+    let time = 0;
 
-    // Definisi Koin Virtual (Animasi Melayang)
-    let coins = [];
-    let time = 0; // Untuk animasi sine wave
-    for (let i = 0; i < numCoins; i++) {
-      coins.push({
-        id: i,
-        baseX: w / 2 + (Math.random() * 200 - 100), // Sebar di tengah
-        baseY: h / 3 + (Math.random() * 100),
-        x: 0, y: 0,
-        radius: 35,
-        value: valuePerCoin,
-        isDragging: false,
-        active: true,
-        phase: Math.random() * Math.PI * 2 // Offset animasi
-      });
-    }
-
-    // Definisi Area Celengan (Lebih rounded & menarik)
     const bucketW = Math.min(w / 3.5, 200);
     const spacing = (w - (bucketW * 3)) / 4;
-    const bucketY = h - 140;
-    const bucketH = 120;
+    const bucketY = h - 160;
+    const bucketH = 130;
 
     const buckets = [
-      { id: 'spending', color: '#E74C3C', label: 'Spending', img: imgSpending, x: spacing, y: bucketY, w: bucketW, h: bucketH },
-      { id: 'saving', color: '#2ECC71', label: 'Saving', img: imgSaving, x: spacing*2 + bucketW, y: bucketY, w: bucketW, h: bucketH },
-      { id: 'sharing', color: '#9B59B6', label: 'Sharing', img: imgSharing, x: spacing*3 + bucketW*2, y: bucketY, w: bucketW, h: bucketH }
+      { id: 'spending', color: '#E74C3C', label: '🛒 Spending', x: spacing, y: bucketY, w: bucketW, h: bucketH, faceTimer: 0 },
+      { id: 'saving', color: '#2ECC71', label: '🐷 Saving', x: spacing*2 + bucketW, y: bucketY, w: bucketW, h: bucketH, faceTimer: 0 },
+      { id: 'sharing', color: '#9B59B6', label: '🤝 Sharing', x: spacing*3 + bucketW*2, y: bucketY, w: bucketW, h: bucketH, faceTimer: 0 }
     ];
 
     let draggedCoin = null;
 
+    // ── FUNGSI GAMBAR MUKA CELENGAN (ANIMASI KAWAI) ────────────────────────
+    function drawFace(ctx, cx, cy, isHappy) {
+      ctx.strokeStyle = "white";
+      ctx.fillStyle = "white";
+      ctx.lineWidth = 4;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+
+      if (isHappy) {
+         // Mata seneng: ^ ^
+         ctx.beginPath(); ctx.moveTo(cx - 15, cy - 2); ctx.lineTo(cx - 10, cy - 8); ctx.lineTo(cx - 5, cy - 2); ctx.stroke();
+         ctx.beginPath(); ctx.moveTo(cx + 5, cy - 2); ctx.lineTo(cx + 10, cy - 8); ctx.lineTo(cx + 15, cy - 2); ctx.stroke();
+         // Mulut Mangap Lebar: D
+         ctx.beginPath(); ctx.arc(cx, cy + 5, 12, 0, Math.PI, false); ctx.fill();
+      } else {
+         // Mata normal: o o
+         ctx.beginPath(); ctx.arc(cx - 10, cy - 5, 4, 0, Math.PI*2); ctx.fill();
+         ctx.beginPath(); ctx.arc(cx + 10, cy - 5, 4, 0, Math.PI*2); ctx.fill();
+         // Mulut senyum tipis: u
+         ctx.beginPath(); ctx.arc(cx, cy + 2, 8, 0, Math.PI, false); ctx.stroke();
+      }
+    }
+
+    function drawBucket(ctx, b) {
+      let currentY = b.y;
+      let isHappy = false;
+
+      // Animasi lompat dan senyum kalau koin masuk / dideketin
+      if (b.faceTimer > 0) {
+        b.faceTimer--;
+        isHappy = true;
+        currentY = b.y - 15; // Efek bouncing ke atas
+        ctx.shadowColor = b.color;
+        ctx.shadowBlur = 20;
+      } else {
+        ctx.shadowColor = "rgba(0,0,0,0.5)";
+        ctx.shadowBlur = 10;
+      }
+
+      // Badan Celengan
+      ctx.fillStyle = b.color;
+      ctx.beginPath();
+      ctx.roundRect(b.x, currentY, b.w, b.h, 24);
+      ctx.fill();
+
+      // Reset Shadow untuk Teks
+      ctx.shadowBlur = 0;
+      
+      // Label Atas
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 16px "Segoe UI", Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText(b.label, b.x + (b.w / 2), currentY + 30);
+      
+      // Muka Kawaii
+      drawFace(ctx, b.x + (b.w / 2), currentY + 65, isHappy);
+
+      // Saldo Tabungan
+      ctx.fillStyle = '#F9E79F';
+      ctx.font = '900 18px "Segoe UI", Arial';
+      ctx.fillText(`Rp ${new Intl.NumberFormat('id-ID').format(balances[b.id])}`, b.x + (b.w / 2), currentY + 110);
+    }
+
     // ── AI HAND TRACKING LOGIC ─────────────────────────────────────────────
     function onResults(results) {
-      time += 0.05; // Increment waktu untuk animasi
+      time += 0.05; 
 
       document.getElementById('loadingUi').style.display = 'none';
       
       canvasCtx.save();
       canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
       
-      // 1. Gambar Video (Dibalik secara Horizontal khusus gambarnya saja!)
+      // Mirror Video feed saja
       canvasCtx.save();
       canvasCtx.scale(-1, 1);
       canvasCtx.translate(-canvasElement.width, 0);
       canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
-      canvasCtx.restore(); // Kembali ke koordinat normal untuk UI
+      canvasCtx.restore(); 
 
-      // 2. Gambar Area Celengan
-      buckets.forEach(b => {
-        // Gambar Icon/Image Celengan
-        if(b.img.complete) {
-            canvasCtx.drawImage(b.img, b.x + (b.w/2) - 40, b.y - 10, 80, 80);
-        }
-        
-        // Label Text
-        canvasCtx.fillStyle = 'white';
-        canvasCtx.font = 'bold 16px "Segoe UI", Arial';
-        canvasCtx.textAlign = 'center';
-        
-        // Shadow untuk teks biar kebaca di kamera
-        canvasCtx.shadowColor = "rgba(0,0,0,0.8)";
-        canvasCtx.shadowBlur = 4;
-        canvasCtx.shadowOffsetX = 1;
-        canvasCtx.shadowOffsetY = 1;
-        
-        canvasCtx.fillText(b.label, b.x + (b.w / 2), b.y + 90);
-        canvasCtx.fillStyle = '#F9E79F';
-        canvasCtx.font = '900 18px "Segoe UI", Arial';
-        canvasCtx.fillText(`Rp ${new Intl.NumberFormat('id-ID').format(balances[b.id])}`, b.x + (b.w / 2), b.y + 115);
-        
-        // Reset shadow
-        canvasCtx.shadowColor = "transparent";
-      });
+      // Render Celengan
+      buckets.forEach(b => drawBucket(canvasCtx, b));
 
       let isPinching = false;
       let pinchX = 0;
       let pinchY = 0;
 
-      // 3. Gambar Rangka Tangan (Landmarks) & Deteksi Pinch
       if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-        
-        // Loop untuk menggambar semua tangan yang terdeteksi
         for (const landmarks of results.multiHandLandmarks) {
-            // Kita harus membalik koordinat X landmarks karena gambar video dibalik
+            // Balik koordinat rangka tangan biar cocok sama video yang di mirror
             const mirroredLandmarks = landmarks.map(lm => ({ x: 1 - lm.x, y: lm.y, z: lm.z }));
-            
-            // Gambar koneksi (garis) tangan
             drawConnectors(canvasCtx, mirroredLandmarks, HAND_CONNECTIONS, {color: '#F39C12', lineWidth: 4});
-            // Gambar sendi (titik) tangan
             drawLandmarks(canvasCtx, mirroredLandmarks, {color: '#FFF3CC', lineWidth: 2, radius: 4});
         }
 
-        // Pakai tangan pertama untuk interaksi Pinch
         const landmarks = results.multiHandLandmarks[0];
-        
-        // Koordinat dinormalisasi & DIBALIK (karena video di-mirror)
         const tx = (1 - landmarks[4].x) * w; 
         const ty = landmarks[4].y * h;
         const ix = (1 - landmarks[8].x) * w;
         const iy = landmarks[8].y * h;
 
-        // Hitung jarak antara ujung jempol(4) dan telunjuk(8)
+        // Threshold Pinch dibuat 90 supaya gampang nyubitnya
         const dist = Math.hypot(tx - ix, ty - iy);
-        
-        if (dist < 50) { // Threshold pinch (agak dilonggarkan biar gampang)
+        if (dist < 90) { 
           isPinching = true;
           pinchX = (tx + ix) / 2;
           pinchY = (ty + iy) / 2;
           
-          // Efek visual pas mencubit
+          // Efek visual jari lagi nyubit
           canvasCtx.beginPath();
-          canvasCtx.arc(pinchX, pinchY, 20, 0, 2 * Math.PI);
-          canvasCtx.fillStyle = 'rgba(243, 156, 18, 0.6)';
+          canvasCtx.arc(pinchX, pinchY, 25, 0, 2 * Math.PI);
+          canvasCtx.fillStyle = 'rgba(243, 156, 18, 0.7)';
           canvasCtx.fill();
-          canvasCtx.lineWidth = 3;
+          canvasCtx.lineWidth = 4;
           canvasCtx.strokeStyle = '#FFFFFF';
           canvasCtx.stroke();
         }
       }
 
-      // ── LOGIC DRAG AND DROP KOIN ─────────────────────────────────────────
+      // ── LOGIC DRAG AND DROP ──────────────────────────────────────────────
       if (isPinching) {
         if (!draggedCoin) {
-          // Cari koin yang paling dekat dengan titik pinch
           for (let i = coins.length - 1; i >= 0; i--) {
             let c = coins[i];
             if (c.active) {
               const d = Math.hypot(c.x - pinchX, c.y - pinchY);
-              if (d < c.radius + 30) { // Hitbox koin
+              // Hitbox koin diperbesar banget (radius + 80) biar kayak magnet
+              if (d < c.radius + 80) { 
                 c.isDragging = true;
                 draggedCoin = c;
-                playSound(sfxCoin); // Suara pas koin keambil
+                playSound(sfxCoin); 
                 break; 
               }
             }
           }
         } else {
-          // Update posisi koin ngikutin jari
           draggedCoin.x = pinchX;
           draggedCoin.y = pinchY;
+
+          // Bikin mulut celengan mangap kalau uangnya ada di atasnya
+          buckets.forEach(b => {
+             if (draggedCoin.x > b.x && draggedCoin.x < b.x + b.w && draggedCoin.y > b.y - 100) {
+                 b.faceTimer = 2; // Tahan mode muka seneng
+             }
+          });
         }
       } else {
-        // Pinch dilepas
         if (draggedCoin) {
           let droppedInBucket = false;
           
-          // Cek area jatuhnya koin
           buckets.forEach(b => {
+            // Area jatuh (dropzone) celengan juga diperluas ke atas (b.y - 100)
             if (draggedCoin.x > b.x && draggedCoin.x < b.x + b.w && 
-                draggedCoin.y > b.y - 40 && draggedCoin.y < b.y + b.h) {
+                draggedCoin.y > b.y - 100 && draggedCoin.y < b.y + b.h) {
               
               balances[b.id] += draggedCoin.value;
               remainingToDistribute -= draggedCoin.value;
               draggedCoin.active = false; 
               droppedInBucket = true;
               
-              playSound(sfxDrop); // Suara koin masuk celengan
+              b.faceTimer = 20; // Bouncing kegirangan lebih lama
+              playSound(sfxDrop); 
               
               if (remainingToDistribute <= 0) {
                 document.getElementById('btnSelesai').style.display = 'block';
-                playSound(sfxWin); // Suara menang kalau habis
+                playSound(sfxWin); 
               }
             }
           });
           
-          // Kalau nggak masuk celengan, kembaliin koin ke posisi melayang
-          if(!droppedInBucket){
-              draggedCoin.isDragging = false;
-          }
+          if(!droppedInBucket){ draggedCoin.isDragging = false; }
           draggedCoin = null;
         }
       }
 
-      // 4. Gambar Koin Aktif
+      // ── RENDER KOIN ──────────────────────────────────────────────────────
       coins.forEach(c => {
         if (c.active) {
-          // Kalau nggak di-drag, koin melayang-layang (Floating Animation)
           if (!c.isDragging) {
-              c.x = c.baseX + Math.sin(time + c.phase) * 15; // Goyang kiri kanan
-              c.y = c.baseY + Math.cos(time + c.phase) * 10; // Goyang atas bawah
+              // Animasi koin melayang kiri-kanan & atas-bawah
+              c.x = c.baseX + Math.sin(time + c.phase) * 10; 
+              c.y = c.baseY + Math.cos(time + c.phase) * 15; 
           }
 
-          // Gambar koin emas
           canvasCtx.beginPath();
           canvasCtx.arc(c.x, c.y, c.radius, 0, 2 * Math.PI);
-          canvasCtx.fillStyle = '#F1C40F';
+          // Warna koin beda-beda tergantung pecahan uangnya
+          canvasCtx.fillStyle = c.value >= 50000 ? '#3498DB' : (c.value >= 10000 ? '#2ECC71' : '#F1C40F');
           canvasCtx.fill();
           
-          // Ring dalam koin
           canvasCtx.beginPath();
-          canvasCtx.arc(c.x, c.y, c.radius - 6, 0, 2 * Math.PI);
+          canvasCtx.arc(c.x, c.y, c.radius - 5, 0, 2 * Math.PI);
           canvasCtx.lineWidth = 3;
-          canvasCtx.strokeStyle = '#D4AC0D';
+          canvasCtx.strokeStyle = 'rgba(255,255,255,0.4)';
           canvasCtx.stroke();
           
-          // Ikon koin
           canvasCtx.fillStyle = '#FFFFFF';
-          canvasCtx.font = 'bold 30px Arial';
+          canvasCtx.font = `bold ${c.radius / 1.5}px Arial`;
           canvasCtx.textAlign = 'center';
           canvasCtx.textBaseline = 'middle';
-          canvasCtx.fillText('Rp', c.x, c.y + 2);
+          canvasCtx.fillText(c.label, c.x, c.y + 2);
         }
       });
 
       canvasCtx.restore();
     }
 
-    // ── INITIALIZE MEDIAPIPE ───────────────────────────────────────────────
-    const hands = new Hands({locateFile: (file) => {
-      return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
-    }});
-    
-    hands.setOptions({
-      maxNumHands: 2, // Biar lebih leluasa deteksi tangannya
-      modelComplexity: 1,
-      minDetectionConfidence: 0.6, // Dilonggarkan biar responsif di anak-anak
-      minTrackingConfidence: 0.6
-    });
-    
+    // ── SETUP KAMERA & AI ──────────────────────────────────────────────────
+    const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+    hands.setOptions({ maxNumHands: 2, modelComplexity: 1, minDetectionConfidence: 0.5, minTrackingConfidence: 0.5 });
     hands.onResults(onResults);
 
-    const camera = new Camera(videoElement, {
-      onFrame: async () => {
-        await hands.send({image: videoElement});
-      },
-      width: 1280,
-      height: 720
-    });
+    const camera = new Camera(videoElement, { onFrame: async () => { await hands.send({image: videoElement}); }, width: 1280, height: 720 });
     
-    // Auto start camera if allowance is set
-    if(numCoins > 0) {
-        camera.start();
-    } else {
-        document.getElementById('loadingUi').innerHTML = "<p>Tidak ada uang jajan yang tersisa untuk dibagi.</p>";
+    if(sisa > 0) { camera.start(); } 
+    else {
+        document.getElementById('loadingUi').innerHTML = "<p>Semua uang jajan sudah habis dibelanjakan!</p>";
         setTimeout(() => simpanDanLanjut(), 3000);
     }
 
-    // Resize handler
     window.addEventListener('resize', () => {
-      w = window.innerWidth;
-      h = window.innerHeight;
-      canvasElement.width = w;
-      canvasElement.height = h;
-      
+      w = window.innerWidth; h = window.innerHeight;
+      canvasElement.width = w; canvasElement.height = h;
       const newBucketW = Math.min(w / 3.5, 200);
       const newSpacing = (w - (newBucketW * 3)) / 4;
-      const newBucketY = h - 140;
-
+      const newBucketY = h - 160;
       buckets[0].x = newSpacing; buckets[0].y = newBucketY; buckets[0].w = newBucketW;
       buckets[1].x = newSpacing*2 + newBucketW; buckets[1].y = newBucketY; buckets[1].w = newBucketW;
       buckets[2].x = newSpacing*3 + newBucketW*2; buckets[2].y = newBucketY; buckets[2].w = newBucketW;
     });
 
-    // ── SIMPAN & LANJUT ────────────────────────────────────────────────────
     function simpanDanLanjut() {
-      sessionStorage.setItem('celengan', JSON.stringify({
-        spending: balances.spending,
-        saving: balances.saving,
-        sharing: balances.sharing
-      }));
-      
-      if (videoElement.srcObject) {
-        videoElement.srcObject.getTracks().forEach(track => track.stop());
-      }
-      
+      sessionStorage.setItem('celengan', JSON.stringify({ spending: balances.spending, saving: balances.saving, sharing: balances.sharing }));
+      if (videoElement.srcObject) videoElement.srcObject.getTracks().forEach(track => track.stop());
       window.location.href = 'wishlist.html';
     }
   </script>
