@@ -623,12 +623,17 @@
   <script>
   // ── DATA ───────────────────────────────────────────────────────────────
     const profession  = JSON.parse(sessionStorage.getItem('profession'))
-    const allowance   = parseInt(sessionStorage.getItem('allowance'))
+    
+    // Perbaikan: Biar angka 0 nggak dianggap "kosong" dan malah di-kick ke home
+    const allowanceData = sessionStorage.getItem('allowance')
+    const allowance   = allowanceData !== null ? parseInt(allowanceData) : null
+    
     const cart        = JSON.parse(sessionStorage.getItem('cart')) || []
     const totalSpent  = parseInt(sessionStorage.getItem('totalSpent')) || 0
-    const sisa        = allowance - totalSpent
+    const sisa        = (allowance !== null ? allowance : 0) - totalSpent
 
-    if (!profession || !allowance) window.location.href = 'index.html'
+    // Hanya kick kalau datanya beneran nggak ada (null), bukan karena 0
+    if (!profession || allowance === null) window.location.href = 'index.html'
 
     const perHour = profession.daily_income / profession.work_hours
     const fmt     = n => new Intl.NumberFormat('id-ID').format(n)

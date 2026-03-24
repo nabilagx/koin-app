@@ -401,6 +401,14 @@
             title.textContent = "Loh, Kok Gak Kerja? 😱";
             emoji.textContent = "💸";
             desc.innerHTML = `Kamu nggak dapat uang sepeserpun! Kalau nggak kerja, nggak akan dapat uang jajan. Besok harus lebih rajin bantuin Ayah/Ibu ya!`;
+            
+            // Langsung lempar ke refleksi dengan pengeluaran 0
+            sessionStorage.setItem('totalSpent', 0); 
+            document.getElementById('btnWrap').innerHTML = `
+                <button class="btn-next show" style="background: linear-gradient(135deg, #E74C3C, #C0392B); box-shadow: 0 4px 15px rgba(231,76,60,0.4);" onclick="window.location.href='refleksi.html'">
+                    Bokek! Langsung Refleksi Aja 😭
+                </button>
+            `;
         }
         
         document.getElementById('resultCard').style.display = 'block';
