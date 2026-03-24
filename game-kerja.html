@@ -369,12 +369,12 @@
     }
 
     // ── END GAME ───────────────────────────────────────────────────────────
+    f// ── END GAME ───────────────────────────────────────────────────────────
     function endGame() {
       isPlaying = false;
       document.getElementById('tapArea').style.pointerEvents = 'none';
 
-      // UANG JAJAN AKTUAL = HASIL KERJA (Bukan lagi disamain allowance awal)
-      // Kita override allowance di sessionStorage supaya kebawa ke halaman selanjutnya
+      // UANG JAJAN AKTUAL = HASIL KERJA
       sessionStorage.setItem('allowance', currentMoney);
 
       sfxTada.play().catch(()=>{});
@@ -385,17 +385,21 @@
         const desc = document.getElementById('resultDesc');
         const title = document.querySelector('.result-title');
         const emoji = document.querySelector('.result-emoji');
+        const btnContainer = document.querySelector('.btn-wrap'); // FIX: Pakai querySelector karena ini class, bukan ID
 
-        // Bikin pesan hasil yang realistis
         // Bikin pesan hasil yang realistis
         if (currentMoney >= allowance) {
             title.textContent = "Wah, Hebat Banget! 🚀";
             emoji.textContent = "🥳";
             desc.innerHTML = `Kerja kerasmu terbayar lunas! Kamu berhasil ngumpulin uang jajan <strong>Rp${fmt(currentMoney)}</strong>! <br><br>Bayangin, ini baru 15 detik. Ayah/Ibu kerja keras berjam-jam setiap hari buat ngasih kamu uang jajan lho. Yuk kita pakai uangnya baik-baik! 💛`;
+            
+            btnContainer.innerHTML = `<button class="btn-next show" onclick="goToJajan()">Sekarang Giliranku Jajan! 🛒</button>`;
         } else if (currentMoney > 0) {
             title.textContent = "Waktu Habis! ⏱️";
             emoji.textContent = "😅";
             desc.innerHTML = `Sayang sekali! Karena kurang cepat kerjanya, uang jajan yang berhasil kamu dapat hari ini cuma <strong>Rp${fmt(currentMoney)}</strong>. <br><br>Gak apa-apa, namanya juga belajar nyari uang. Nanti jajan dan nabungnya harus dicukup-cukupin dari uang segini ya! 💸`;
+            
+            btnContainer.innerHTML = `<button class="btn-next show" onclick="goToJajan()">Sekarang Giliranku Jajan! 🛒</button>`;
         } else {
             // Kasus ekstrem kalau anak diem doang (0 tap)
             title.textContent = "Loh, Kok Gak Kerja? 😱";
@@ -404,32 +408,15 @@
             
             // Langsung lempar ke refleksi dengan pengeluaran 0
             sessionStorage.setItem('totalSpent', 0); 
-            document.getElementById('btnWrap').innerHTML = `
+            btnContainer.innerHTML = `
                 <button class="btn-next show" style="background: linear-gradient(135deg, #E74C3C, #C0392B); box-shadow: 0 4px 15px rgba(231,76,60,0.4);" onclick="window.location.href='refleksi.html'">
                     Bokek! Langsung Refleksi Aja 😭
                 </button>
             `;
         }
         
+        // Tampilkan kartu hasil setelah semua siap
         document.getElementById('resultCard').style.display = 'block';
-        
-        // Sembunyikan tombol NEXT kalau uangnya 0 (karena nggak bisa jajan)
-        if (currentMoney > 0) {
-            document.getElementById('btnNext').classList.add('show');
-        } else {
-            // Sembunyikan tombol NEXT kalau uangnya 0 (karena nggak bisa jajan)
-            if (currentMoney > 0) {
-                document.getElementById('btnNext').classList.add('show');
-            } else {
-                // Langsung "tendang" ke refleksi!
-                sessionStorage.setItem('totalSpent', 0); // Pastikan pengeluaran 0
-                document.getElementById('btnWrap').innerHTML = `
-                    <button class="btn-next show" style="background: linear-gradient(135deg, #E74C3C, #C0392B); box-shadow: 0 4px 15px rgba(231,76,60,0.4);" onclick="window.location.href='refleksi.html'">
-                        Bokek! Langsung Refleksi Aja 😭
-                    </button>
-                `;
-            }
-        }
 
       }, 1000); 
     }
